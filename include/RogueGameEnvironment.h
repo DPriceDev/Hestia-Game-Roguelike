@@ -1,8 +1,8 @@
 #ifndef HESTIA_ROGUE_GAME_ENVIRONMENT_H
 #define HESTIA_ROGUE_GAME_ENVIRONMENT_H
 
-#include "framework/Engine.h"
-#include "framework/GameEnvironment.h"
+#include <framework/Engine.h>
+#include <framework/GameEnvironment.h>
 
 #include "RoguePlayer.h"
 
@@ -16,9 +16,7 @@ class RogueGameEnvironment : public HGE::GameEnvironment {
         HGE::Engine::instance()->objectManager()->CreateObject<RoguePlayer>();
     }
 
-    void gameLoop() override {
-        
-    }
+    void gameLoop() override { }
 
     void endGame() override {
 

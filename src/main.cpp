@@ -5,12 +5,11 @@
 #include <iostream>
 #include <memory>
 
+#include <framework/Engine.h>
+#include <graphics/OpenGlModule.h>
+#include <util/Logger.h>
+
 #include "RogueGameEnvironment.h"
-
-#include "framework/Engine.h"
-#include "graphics/OpenGlModule.h"
-
-#include "util/Logger.h"
 
 int main(void) {
     HGE::Engine* engine = HGE::Engine::instance();

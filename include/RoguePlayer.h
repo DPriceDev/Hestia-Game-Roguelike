@@ -1,15 +1,19 @@
 #ifndef HESTIA_ROGUELIKE_ROGUE_PLAYER_H
 #define HESTIA_ROGUELIKE_ROGUE_PLAYER_H
 
-#include "framework/ecs/Object.h"
-#include "framework/Engine.h"
-#include "framework/systems/SpriteSystem.h"
-#include "framework/systems/ControlSystem.h"
-#include "framework/systems/WorldPositionSystem.h"
+#include <framework/ecs/Object.h>
+#include <framework/Engine.h>
+#include <framework/systems/TickSystem.h>
+#include <framework/systems/SpriteSystem.h>
+#include <framework/systems/ControlSystem.h>
+#include <framework/systems/WorldPositionSystem.h>
+
+#include <util/Logger.h>
 
 class RoguePlayer : public HGE::Object {
 
     protected:
+    HGE::TickComponent* mTickComponent;
     HGE::SpriteComponent* mSpriteComponent;
     HGE::ControlComponent* mControlComponent;
     HGE::WorldPositionComponent* mPositionComponent;
@@ -21,6 +25,7 @@ class RoguePlayer : public HGE::Object {
     ~RoguePlayer() = default;
 
     void onCreate() override {
+        mTickComponent = HGE::Engine::componentManager()->createComponent<HGE::TickComponent>(getId(), [&] (double deltaTime) { this->tickFunction(deltaTime); });
         mPositionComponent = HGE::Engine::componentManager()->createComponent<HGE::WorldPositionComponent>(getId());
         mSpriteComponent = HGE::Engine::componentManager()->createComponent<HGE::SpriteComponent>(getId());
         mControlComponent = HGE::Engine::componentManager()->createComponent<HGE::ControlComponent>(getId());
@@ -41,7 +46,7 @@ class RoguePlayer : public HGE::Object {
         mControlComponent->addKey(HGE::RIGHT_ARROW_KEY);
     }
 
-    void tick(double deltaTime) override {
+    void tickFunction(double deltaTime) {
         mSpriteComponent->mTransform.mRotation += 360/3 * deltaTime;
 
         if(mControlComponent->getKeyValue(HGE::DOWN_ARROW_KEY)) {
