@@ -49,6 +49,8 @@ class RoguePlayer : public HGE::Object {
     void tickFunction(double deltaTime) {
         mSpriteComponent->mTransform.mRotation += 360/3 * deltaTime;
 
+        auto screenSize = HGE::Engine::instance()->graphicsModule()->getScreenSize();
+
         if(mControlComponent->getKeyValue(HGE::DOWN_ARROW_KEY)) {
             mPositionComponent->mTransform.mLocalPosition.y -= mMovementSpeed * deltaTime;
 
@@ -60,8 +62,8 @@ class RoguePlayer : public HGE::Object {
         if(mControlComponent->getKeyValue(HGE::UP_ARROW_KEY)) {
             mPositionComponent->mTransform.mLocalPosition.y += mMovementSpeed * deltaTime;
 
-            if(mPositionComponent->mTransform.mLocalPosition.y > 600 - mSpriteComponent->mTransform.mScale.y/2) {
-                mPositionComponent->mTransform.mLocalPosition.y = 600 - mSpriteComponent->mTransform.mScale.y/2;
+            if(mPositionComponent->mTransform.mLocalPosition.y > screenSize.height() - mSpriteComponent->mTransform.mScale.y/2) {
+                mPositionComponent->mTransform.mLocalPosition.y = screenSize.height() - mSpriteComponent->mTransform.mScale.y/2;
             }
         }
 
@@ -76,8 +78,8 @@ class RoguePlayer : public HGE::Object {
         if(mControlComponent->getKeyValue(HGE::RIGHT_ARROW_KEY)) {
             mPositionComponent->mTransform.mLocalPosition.x += mMovementSpeed * deltaTime;
 
-            if(mPositionComponent->mTransform.mLocalPosition.x > 800 - mSpriteComponent->mTransform.mScale.x/2) {
-                mPositionComponent->mTransform.mLocalPosition.x = 800 - mSpriteComponent->mTransform.mScale.x/2;
+            if(mPositionComponent->mTransform.mLocalPosition.x > screenSize.width() - mSpriteComponent->mTransform.mScale.x/2) {
+                mPositionComponent->mTransform.mLocalPosition.x = screenSize.width() - mSpriteComponent->mTransform.mScale.x/2;
             }
         }
     }
