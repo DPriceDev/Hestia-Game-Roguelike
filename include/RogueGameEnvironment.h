@@ -5,15 +5,17 @@
 #include <framework/GameEnvironment.h>
 
 #include "RoguePlayer.h"
+#include "Wall.h"
 
 class RogueGameEnvironment : public HGE::GameEnvironment {
 
     public:
     RogueGameEnvironment() = default;
-    ~RogueGameEnvironment() = default;
+    ~RogueGameEnvironment() override = default;
 
     void beginGame() override {
         HGE::Engine::instance()->objectManager()->CreateObject<RoguePlayer>();
+        HGE::Engine::instance()->objectManager()->CreateObject<Wall>();
     }
 
     void gameLoop() override { }

@@ -7,6 +7,7 @@
 #include <framework/systems/SpriteSystem.h>
 #include <framework/systems/ControlSystem.h>
 #include <framework/systems/WorldPositionSystem.h>
+#include <framework/systems/CameraSystem.h>
 
 #include <util/Logger.h>
 
@@ -17,18 +18,20 @@ class RoguePlayer : public HGE::Object {
     HGE::SpriteComponent* mSpriteComponent;
     HGE::ControlComponent* mControlComponent;
     HGE::WorldPositionComponent* mPositionComponent;
+    HGE::CameraComponent* mCameraComponent;
 
     float mMovementSpeed = 220;
 
     public:
     RoguePlayer() = default;
-    ~RoguePlayer() = default;
+    ~RoguePlayer() override = default;
 
     void onCreate() override {
         mTickComponent = HGE::Engine::componentManager()->createComponent<HGE::TickComponent>(getId(), [&] (double deltaTime) { this->tickFunction(deltaTime); });
         mPositionComponent = HGE::Engine::componentManager()->createComponent<HGE::WorldPositionComponent>(getId());
         mSpriteComponent = HGE::Engine::componentManager()->createComponent<HGE::SpriteComponent>(getId());
         mControlComponent = HGE::Engine::componentManager()->createComponent<HGE::ControlComponent>(getId());
+        mCameraComponent = HGE::Engine::componentManager()->createComponent<HGE::CameraComponent>(getId(), HGE::CameraView(800, 600), true);
 
         mPositionComponent->mTransform.mLocalPosition.x = 400;
         mPositionComponent->mTransform.mLocalPosition.y = 300;
@@ -47,41 +50,27 @@ class RoguePlayer : public HGE::Object {
     }
 
     void tickFunction(double deltaTime) {
-        mSpriteComponent->mTransform.mRotation += 360/3 * deltaTime;
-
-        auto screenSize = HGE::Engine::instance()->graphicsModule()->getScreenSize();
+        mSpriteComponent->mTransform.mRotation += 180 * deltaTime;
 
         if(mControlComponent->getKeyValue(HGE::DOWN_ARROW_KEY)) {
             mPositionComponent->mTransform.mLocalPosition.y -= mMovementSpeed * deltaTime;
-
-            if(mPositionComponent->mTransform.mLocalPosition.y < 0 + mSpriteComponent->mTransform.mScale.y/2) {
-                mPositionComponent->mTransform.mLocalPosition.y = 0 + mSpriteComponent->mTransform.mScale.y/2;
-            }
         }
 
         if(mControlComponent->getKeyValue(HGE::UP_ARROW_KEY)) {
             mPositionComponent->mTransform.mLocalPosition.y += mMovementSpeed * deltaTime;
-
-            if(mPositionComponent->mTransform.mLocalPosition.y > screenSize.height() - mSpriteComponent->mTransform.mScale.y/2) {
-                mPositionComponent->mTransform.mLocalPosition.y = screenSize.height() - mSpriteComponent->mTransform.mScale.y/2;
-            }
         }
 
         if(mControlComponent->getKeyValue(HGE::LEFT_ARROW_KEY)) {
             mPositionComponent->mTransform.mLocalPosition.x -= mMovementSpeed * deltaTime;
-
-            if(mPositionComponent->mTransform.mLocalPosition.x < 0 + mSpriteComponent->mTransform.mScale.x/2) {
-                mPositionComponent->mTransform.mLocalPosition.x = 0 + mSpriteComponent->mTransform.mScale.x/2;
-            }
         }
 
         if(mControlComponent->getKeyValue(HGE::RIGHT_ARROW_KEY)) {
             mPositionComponent->mTransform.mLocalPosition.x += mMovementSpeed * deltaTime;
-
-            if(mPositionComponent->mTransform.mLocalPosition.x > screenSize.width() - mSpriteComponent->mTransform.mScale.x/2) {
-                mPositionComponent->mTransform.mLocalPosition.x = screenSize.width() - mSpriteComponent->mTransform.mScale.x/2;
-            }
         }
+
+        mCameraComponent->mCameraView.mViewportPosition = mPositionComponent->mTransform.mLocalPosition;
+        mCameraComponent->mCameraView.mViewportPosition.x -= mCameraComponent->mCameraView.mViewportSize.x/2;
+        mCameraComponent->mCameraView.mViewportPosition.y -= mCameraComponent->mCameraView.mViewportSize.y/2;
     }
 };
 
