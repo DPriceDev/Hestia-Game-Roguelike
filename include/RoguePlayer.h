@@ -1,7 +1,8 @@
 #ifndef HESTIA_ROGUELIKE_ROGUE_PLAYER_H
 #define HESTIA_ROGUELIKE_ROGUE_PLAYER_H
 
-#include <framework/ecs/Object.h>
+#include <framework/ecs/object.h>
+#include <framework/ecs/GameObject.h>
 #include <framework/Engine.h>
 #include <framework/systems/TickSystem.h>
 #include <framework/systems/SpriteSystem.h>
@@ -11,7 +12,7 @@
 
 #include <util/Logger.h>
 
-class RoguePlayer : public HGE::Object {
+class RoguePlayer : public HGE::GameObject {
 
     protected:
     HGE::TickComponent* mTickComponent;
@@ -24,14 +25,22 @@ class RoguePlayer : public HGE::Object {
 
     public:
     RoguePlayer() = default;
-    ~RoguePlayer() override = default;
+    ~RoguePlayer() override {
+        destroyComponent(mTickComponent);
+        destroyComponent(mSpriteComponent);
+        destroyComponent(mControlComponent);
+        destroyComponent(mPositionComponent);
+        destroyComponent(mCameraComponent);
+    }
 
     void onCreate() override {
-        mTickComponent = HGE::Engine::componentManager()->createComponent<HGE::TickComponent>(getId(), [&] (double deltaTime) { this->tickFunction(deltaTime); });
-        mPositionComponent = HGE::Engine::componentManager()->createComponent<HGE::WorldPositionComponent>(getId());
-        mSpriteComponent = HGE::Engine::componentManager()->createComponent<HGE::SpriteComponent>(getId());
-        mControlComponent = HGE::Engine::componentManager()->createComponent<HGE::ControlComponent>(getId());
-        mCameraComponent = HGE::Engine::componentManager()->createComponent<HGE::CameraComponent>(getId(), HGE::CameraView(800, 600), true);
+        mTickComponent = createComponent<HGE::TickComponent>(getId());
+        mPositionComponent = createComponent<HGE::WorldPositionComponent>(getId());
+        mSpriteComponent = createComponent<HGE::SpriteComponent>(getId());
+        mControlComponent = createComponent<HGE::ControlComponent>(getId());
+        mCameraComponent = createComponent<HGE::CameraComponent>(getId(), HGE::CameraView(800, 600), true);
+
+        mTickComponent->mTickFunction = [&] (double deltaTime) { this->tickFunction(deltaTime); };
 
         mPositionComponent->mTransform.mLocalPosition.x = 400;
         mPositionComponent->mTransform.mLocalPosition.y = 300;

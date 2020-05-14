@@ -5,26 +5,25 @@
 #ifndef HESTIA_ROGUELIKE_WALL_H
 #define HESTIA_ROGUELIKE_WALL_H
 
-#include <framework/ecs/Object.h>
+#include <framework/ecs/GameObject.h>
 #include <framework/systems/SpriteSystem.h>
 #include <framework/Engine.h>
 
-class Wall : public HGE::Object {
+class Wall : public HGE::GameObject {
 
     HGE::SpriteComponent* mSpriteComponent;
     HGE::WorldPositionComponent* mPositionComponent;
 
 public:
-    Wall() {
-
-    }
-    ~Wall() {
-
+    Wall() = default;
+    ~Wall() override {
+        destroyComponent(mSpriteComponent);
+        destroyComponent(mPositionComponent);
     }
 
     void onCreate() override {
-        mSpriteComponent = HGE::Engine::componentManager()->createComponent<HGE::SpriteComponent>(getId());
-        mPositionComponent = HGE::Engine::componentManager()->createComponent<HGE::WorldPositionComponent>(getId());
+        mSpriteComponent = createComponent<HGE::SpriteComponent>(getId());
+        mPositionComponent = createComponent<HGE::WorldPositionComponent>(getId());
         mPositionComponent->mTransform.mLocalPosition.x = 500;
         mPositionComponent->mTransform.mLocalPosition.y = 600;
         mSpriteComponent->mTransform.mScale.x = 50;
