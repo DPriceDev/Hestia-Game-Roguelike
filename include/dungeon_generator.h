@@ -57,36 +57,47 @@ class DungeonGenerator {
                  HGE::roundValueToMultipleOf(radius * sin(angle), 1.0f)};
     }
 
-
+    /* */
     void separateRooms() {
-
         bool overlapsExist = true;
         while(overlapsExist) {
             overlapsExist = false;
 
-            for (auto &room : mRooms) {
-                for (auto const &other : mRooms) {
-                    if (room.mRect.isOverlapping(other.mRect) && room != other) {
+            std::for_each(mRooms.begin(), mRooms.end(), [&] (auto & room) {
+                std::vector<Room> overlapping { }, overlappingSame { };
 
-                        if(room.mRect.midpoint() != other.mRect.midpoint()) {
-                            room.mMovement += (room.mRect.midpoint() - other.mRect.midpoint()) / sSeperationFactor;
-                        } else {
-                            room.mMovement += room.mRect.midpoint().normalised();
-                        }
-                        overlapsExist = true;
-                    }
-                }
+                std::copy_if(mRooms.begin(), mRooms.end(), std::back_inserter(overlapping), [&] (auto & o) {
+                    return room.mRect.isOverlapping(o.mRect)
+                        && room != o
+                        && room.mRect.midpoint() != o.mRect.midpoint();
+                });
 
-//                LOG_DEBUG("seperate rooms", "id: ", room.mId, "vector- x: ", movementVector.x, " y: ", movementVector
-//                .y, " --- room position x: ", room.mRect.mPosition.x, " y: ", room.mRect.mPosition.y)
-            }
+                std::copy_if(mRooms.begin(), mRooms.end(), std::back_inserter(overlappingSame), [&] (auto & o) {
+                    return room.mRect.isOverlapping(o.mRect)
+                        && room != o
+                        && room.mRect.midpoint() == o.mRect.midpoint();
+                });
 
-            for(auto & room : mRooms) {
+                const auto matchSeparate = [&] (auto & a, auto & b) {
+                    overlapsExist = true;
+                    return a + (room.mRect.midpoint() - b.mRect.midpoint()) / sSeperationFactor;
+                };
+
+                const auto matchSame = [&] (auto & a, auto & b) {
+                    overlapsExist = true;
+                    return a + room.mRect.midpoint().normalised();
+                };
+
+                room.mMovement += std::accumulate(overlapping.begin(), overlapping.end(), HGE::Vector2f(), matchSeparate);
+                room.mMovement += std::accumulate(overlappingSame.begin(), overlappingSame.end(), HGE::Vector2f(), matchSame);
+            });
+
+            std::for_each(mRooms.begin(), mRooms.end(), [] (auto & room) {
                 room.mMovement.x = HGE::roundValueToMultipleOf(room.mMovement.x, 1.0f);
                 room.mMovement.y = HGE::roundValueToMultipleOf(room.mMovement.y, 1.0f);
                 room.mRect.mPosition += room.mMovement;
                 room.mMovement = HGE::Vector2f();
-            }
+            });
         }
 
         LOG_DEBUG("Dungeon Generator",
@@ -143,6 +154,7 @@ public:
         }), mRooms.end());
 
         /* do a delaneay run on rooms and generate a graph? */
+        
 
         /* do a minimum angle check on graph? */
 
