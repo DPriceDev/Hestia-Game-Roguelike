@@ -8,6 +8,7 @@
 #include <cmath>
 #include <vector>
 #include <random>
+#include <algorithm>
 
 #include "maths/maths_types.h"
 #include <util/logger.h>
@@ -21,6 +22,7 @@ struct Room {
     HGE::Vector2f mMovement{ };
 
     explicit Room(int id) : mId(id) { }
+    Room(int id, HGE::Rectf rect) : mId(id), mRect(rect) { }
     ~Room() = default;
 
     bool operator!=(const Room & other) const {
@@ -32,11 +34,14 @@ struct Room {
  * Dungeon Generator
  */
 class DungeonGenerator {
+    const static int sNumberOfInitialRooms = 100;
     constexpr static float S_RADIUS = 100.0f;
     constexpr static float S_RADIUS_SQRD = S_RADIUS * S_RADIUS;
     constexpr static float S_TWO_PI = 2 * M_PI;
-    constexpr static float sMinimumRoomSize = 4.0f;
+    constexpr static float sMinimumRoomSize = 6.0f;
     constexpr static float sMaximumRoomSize = 20.0f;
+    constexpr static float sMinimumRoomArea = 220.0f;
+    constexpr static float sSeperationFactor = 4.0f;
 
     std::vector<Room> mRooms{ };
     std::random_device mRandomDevice{ };
@@ -64,9 +69,9 @@ class DungeonGenerator {
                     if (room.mRect.isOverlapping(other.mRect) && room != other) {
 
                         if(room.mRect.midpoint() != other.mRect.midpoint()) {
-                            room.mMovement += (room.mRect.midpoint() - other.mRect.midpoint());
+                            room.mMovement += (room.mRect.midpoint() - other.mRect.midpoint()) / sSeperationFactor;
                         } else {
-                            room.mMovement += (room.mRect.midpoint().normalised() * 1.0f);
+                            room.mMovement += room.mRect.midpoint().normalised();
                         }
                         overlapsExist = true;
                     }
@@ -107,18 +112,14 @@ public:
 
     void generate() {
 
-        for(int i = 0; i < 100; ++i) {
+        for(int i = 0; i < sNumberOfInitialRooms; ++i) {
             mRooms.emplace_back(Room(i));
 
             mRooms.back().mRect = HGE::Rectf(randomPointInCircle(),
-                    { HGE::roundValueToMultipleOf(
-                            HGE::randomNumberBetween<float>(sMinimumRoomSize,
-                                    sMaximumRoomSize),
-                                    1.0f),
-                      HGE::roundValueToMultipleOf(
-                              HGE::randomNumberBetween<float>(sMinimumRoomSize,
-                                      sMaximumRoomSize),
-                                      1.0f)});
+                    { HGE::roundValueToMultipleOf(HGE::randomNumberBetween<float>(sMinimumRoomSize,
+                            sMaximumRoomSize), 1.0f),
+                      HGE::roundValueToMultipleOf(HGE::randomNumberBetween<float>(sMinimumRoomSize,
+                              sMaximumRoomSize), 1.0f) });
 
             LOG_DEBUG("Dungeon Generator",
                     "id: ",
@@ -133,11 +134,13 @@ public:
                       mRooms.back().mRect.mPosition.y);
         }
 
+        /* move the rooms so they do not overlap */
         separateRooms();
 
-        /* move the rooms so they do not overlap */
-
         /* select the big rooms and discard rest. */
+        mRooms.erase(std::remove_if(mRooms.begin(), mRooms.end(), [] (const auto & room) {
+            return room.mRect.area() < sMinimumRoomArea;
+        }), mRooms.end());
 
         /* do a delaneay run on rooms and generate a graph? */
 
