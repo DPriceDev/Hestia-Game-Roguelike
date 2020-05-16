@@ -2,14 +2,14 @@
  * Copyright D. price 2020.
  */
 
-#include <framework/Engine.h>
-#include <graphics/OpenGlModule.h>
+#include <engine.h>
+#include <graphics/opengl_module.h>
 
 #include "RogueGameEnvironment.h"
 
 int main() {
     auto* engine = HGE::Engine::instance();
-    HGE::Engine::useGraphicsModule<HGE::OpenGlModule>();
+    HGE::Engine::useGraphicsModule<HGE::OpenglModule>();
     HGE::Engine::graphicsModule()->setGameTitle("Hestia Roguelike v1.0");
 
     // TODO: Load inital config and get initial level?

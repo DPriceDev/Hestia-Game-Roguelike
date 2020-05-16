@@ -1,7 +1,7 @@
 #ifndef HESTIA_ROGUE_GAME_ENVIRONMENT_H
 #define HESTIA_ROGUE_GAME_ENVIRONMENT_H
 
-#include <framework/GameEnvironment.h>
+#include <framework/game_envrionment.h>
 
 #include "RoguePlayer.h"
 #include "Wall.h"

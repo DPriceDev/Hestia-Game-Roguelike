@@ -5,8 +5,8 @@
 #ifndef HESTIA_ROGUELIKE_MAP_GRID_H
 #define HESTIA_ROGUELIKE_MAP_GRID_H
 
-#include <framework/ecs/GameObject.h>
-#include <framework/systems/TickSystem.h>
+#include <framework/ecs/game_object.h>
+#include <framework/systems/tick_system.h>
 #include <array>
 
 #include "RoguePlayer.h"
@@ -14,7 +14,7 @@
 #include "floor_tile.h"
 #include "dungeon_generator.h"
 
-#include <util/Logger.h>
+#include <util/logger.h>
 
 /**
  *

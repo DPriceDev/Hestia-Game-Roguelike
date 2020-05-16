@@ -2,15 +2,15 @@
 #define HESTIA_ROGUELIKE_ROGUE_PLAYER_H
 
 #include <framework/ecs/object.h>
-#include <framework/ecs/GameObject.h>
-#include <framework/Engine.h>
-#include <framework/systems/TickSystem.h>
-#include <framework/systems/SpriteSystem.h>
-#include <framework/systems/ControlSystem.h>
-#include <framework/systems/WorldPositionSystem.h>
-#include <framework/systems/CameraSystem.h>
+#include <framework/ecs/game_object.h>
+#include <engine.h>
+#include <framework/systems/tick_system.h>
+#include <framework/systems/sprite_system.h>
+#include <framework/systems/control_system.h>
+#include <framework/systems/position_system.h>
+#include <framework/systems/camera_system.h>
 
-#include <util/Logger.h>
+#include <util/logger.h>
 
 class RoguePlayer : public HGE::GameObject {
 
@@ -18,7 +18,7 @@ class RoguePlayer : public HGE::GameObject {
     HGE::TickComponent* mTickComponent;
     HGE::SpriteComponent* mSpriteComponent;
     HGE::ControlComponent* mControlComponent;
-    HGE::WorldPositionComponent* mPositionComponent;
+    HGE::PositionComponent* mPositionComponent;
     HGE::CameraComponent* mCameraComponent;
 
     float mMovementSpeed = 220;
@@ -35,7 +35,7 @@ class RoguePlayer : public HGE::GameObject {
 
     void onCreate() override {
         mTickComponent = createComponent<HGE::TickComponent>(getId());
-        mPositionComponent = createComponent<HGE::WorldPositionComponent>(getId());
+        mPositionComponent = createComponent<HGE::PositionComponent>(getId());
         mSpriteComponent = createComponent<HGE::SpriteComponent>(getId());
         mControlComponent = createComponent<HGE::ControlComponent>(getId());
         mCameraComponent = createComponent<HGE::CameraComponent>(getId(), HGE::CameraView(800, 600), true);

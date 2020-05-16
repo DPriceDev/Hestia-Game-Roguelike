@@ -7,11 +7,11 @@
 
 #include <string>
 
-#include <framework/ecs/GameObject.h>
-#include <framework/systems/SpriteSystem.h>
-#include <framework/Engine.h>
+#include <framework/ecs/game_object.h>
+#include <framework/systems/sprite_system.h>
+#include <engine.h>
 
-#include <maths/HGEMath.h>
+#include <maths/maths.h>
 
 class FloorTile : public HGE::GameObject {
 
@@ -27,7 +27,7 @@ class FloorTile : public HGE::GameObject {
                                        "./assets/textures/floor_10.png"};
 public:
     HGE::SpriteComponent* mSprite;
-    HGE::WorldPositionComponent* mPosition;
+    HGE::PositionComponent* mPosition;
 
     FloorTile() = default;
     ~FloorTile() override {
@@ -37,7 +37,7 @@ public:
 
     void onCreate() override {
         mSprite = createComponent<HGE::SpriteComponent>(getId());
-        mPosition = createComponent<HGE::WorldPositionComponent>(getId());
+        mPosition = createComponent<HGE::PositionComponent>(getId());
 
         mSprite->mTransform.mScale.x = 32;
         mSprite->mTransform.mScale.y = 32;

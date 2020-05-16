@@ -9,8 +9,8 @@
 #include <vector>
 #include <random>
 
-#include <maths/MathsTypes.h>
-#include <util/Logger.h>
+#include "maths/maths_types.h"
+#include <util/logger.h>
 
 /**
  * Dungeon Room Struct
