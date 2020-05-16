@@ -12,6 +12,9 @@
 
 #include "maths/maths_types.h"
 #include <util/logger.h>
+#include <framework/systems/debug_system.h>
+
+#include "delaunay.h"
 
 /**
  * Dungeon Room Struct
@@ -42,6 +45,8 @@ class DungeonGenerator {
     constexpr static float sMaximumRoomSize = 20.0f;
     constexpr static float sMinimumRoomArea = 220.0f;
     constexpr static float sSeperationFactor = 4.0f;
+
+    HGE::DebugComponent* mDebug;
 
     std::vector<Room> mRooms{ };
     std::random_device mRandomDevice{ };
@@ -114,7 +119,7 @@ class DungeonGenerator {
     }
 
 public:
-    DungeonGenerator() = default;
+    explicit DungeonGenerator(HGE::DebugComponent* debug) : mDebug(debug) { }
     ~DungeonGenerator() = default;
 
     const std::vector<Room>& getRooms() {
@@ -153,8 +158,36 @@ public:
             return room.mRect.area() < sMinimumRoomArea;
         }), mRooms.end());
 
+        /* vector of midpoints */
+        auto midpoints = std::vector<HGE::Vector2f>();
+        std::transform(mRooms.begin(), mRooms.end(), std::back_inserter(midpoints), [] (const auto & room) {
+            return room.mRect.midpoint();
+        });
+
         /* do a delaneay run on rooms and generate a graph? */
-        
+        auto delaunay = Triangulation();
+        delaunay.triangulate(midpoints);
+
+
+        for(auto const & triangle : delaunay.mTriangles) {
+            mDebug->drawLine(HGE::Vector2f ( 400 + triangle.a->x, 300 + triangle.a->y ),
+                             HGE::Vector2f ( 400 + triangle.b->x, 300 + triangle.b->y ), 10.0f );
+
+            mDebug->drawLine(HGE::Vector2f ( 400 + triangle.b->x, 300 + triangle.b->y ),
+                             HGE::Vector2f ( 400 + triangle.c->x, 300 + triangle.c->y ), 10.0f );
+
+            mDebug->drawLine(HGE::Vector2f ( 400 + triangle.c->x, 300 + triangle.c->y ),
+                             HGE::Vector2f ( 400 + triangle.a->x, 300 + triangle.a->y ), 10.0f );
+
+            mDebug->drawCircle(HGE::Vector2f ( triangle.circumcenter().x + 400.0f , triangle.circumcenter().y + 300.0f ),
+                    triangle.circumcenterRadius(), 10.0f);
+
+        }
+
+        LOG_DEBUG("Trangulation!", "circumcenter",
+                delaunay.mTriangles.begin()->circumcenter().x,
+                delaunay.mTriangles.begin()->circumcenter().y)
+
 
         /* do a minimum angle check on graph? */
 
