@@ -5,6 +5,7 @@
 
 #include "RoguePlayer.h"
 #include "Wall.h"
+#include "map_grid.h"
 
 class RogueGameEnvironment : public HGE::GameEnvironment {
 
@@ -13,8 +14,7 @@ class RogueGameEnvironment : public HGE::GameEnvironment {
     ~RogueGameEnvironment() override = default;
 
     void beginGame() override {
-        createObject<RoguePlayer>();
-        createObject<Wall>();
+        createObject<MapGrid>();
     }
 
     void gameLoop(const double & deltaTime) override { }
