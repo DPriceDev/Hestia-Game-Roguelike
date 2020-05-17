@@ -105,18 +105,6 @@ class DungeonGenerator {
                 room.mMovement = HGE::Vector2f();
             });
         }
-
-        LOG_DEBUG("Dungeon Generator",
-                  "id: ",
-                  mRooms.back().mId,
-                  " generated point- size x: ",
-                  mRooms.back().mRect.mSize.x,
-                  " size y: ",
-                  mRooms.back().mRect.mSize.y,
-                  " pos x: ",
-                  mRooms.back().mRect.mPosition.x,
-                  " pos y: ",
-                  mRooms.back().mRect.mPosition.y);
     }
 
 public:
@@ -131,29 +119,15 @@ public:
 
         for(int i = 0; i < sNumberOfInitialRooms; ++i) {
             mRooms.emplace_back(Room(i));
-
             mRooms.back().mRect = HGE::Rectf(randomPointInCircle(),
                     { HGE::roundValueToMultipleOf(HGE::randomNumberBetween<float>(sMinimumRoomSize,
                             sMaximumRoomSize), 1.0f),
                       HGE::roundValueToMultipleOf(HGE::randomNumberBetween<float>(sMinimumRoomSize,
                               sMaximumRoomSize), 1.0f) });
-
-            LOG_DEBUG("Dungeon Generator",
-                    "id: ",
-                    mRooms.back().mId,
-                    " generated point- pos x: ",
-                      mRooms.back().mRect.mPosition.x,
-                      " pos y: ",
-                      mRooms.back().mRect.mPosition.y,
-                      "midpoint: ",
-                      mRooms.back().mRect.midpoint().x,
-                      mRooms.back().mRect.midpoint().y)
         }
 
-        /* move the rooms so they do not overlap */
         separateRooms();
 
-        /* select the big rooms and discard rest. */
         mRooms.erase(std::remove_if(mRooms.begin(), mRooms.end(), [] (const auto & room) {
             return room.mRect.area() < sMinimumRoomArea;
         }), mRooms.end());
@@ -164,55 +138,14 @@ public:
             return room.mRect.midpoint();
         });
 
+        auto delaunay = Triangulation(midpoints);
 
-
-
-        /* do a delaneay run on rooms and generate a graph? */
-        auto delaunay = Triangulation();
-        auto testVec = std::vector<HGE::Vector2f>();
-        testVec.emplace_back(-30.0f, -30.0f );
-        testVec.emplace_back(50.0f, 100.0f );
-        testVec.emplace_back(-50.0f, -100.0f );
-        testVec.emplace_back(20.0f, 150.0f );
-        testVec.emplace_back(-30.0f, 60.0f );
-        testVec.emplace_back(-120.0f, -100.0f );
-        testVec.emplace_back(90.0f, -150.0f );
-
-
-        delaunay.triangulate(midpoints);
-
-
-        for(auto const & triangle : delaunay.mTriangles) {
-            mDebug->drawLine(HGE::Vector2f ( 400 + triangle->a->x, 300 + triangle->a->y ),
-                             HGE::Vector2f ( 400 + triangle->b->x, 300 + triangle->b->y ), 10.0f, {255, 255, 255} );
-
-            mDebug->drawLine(HGE::Vector2f ( 400 + triangle->b->x, 300 + triangle->b->y ),
-                             HGE::Vector2f ( 400 + triangle->c->x, 300 + triangle->c->y ), 10.0f, {255, 255, 255});
-
-            mDebug->drawLine(HGE::Vector2f ( 400 + triangle->c->x, 300 + triangle->c->y ),
-                             HGE::Vector2f ( 400 + triangle->a->x, 300 + triangle->a->y ), 10.0f, {255, 255, 255} );
-
-//            mDebug->drawCircle(HGE::Vector2f ( triangle->circumcenter().x + 400.0f , triangle->circumcenter().y + 300.0f ),
-//                    triangle->circumcenterRadius(), 10.0f, {255, 0, 0});
+        for(auto const & edge : delaunay.getEdges()) {
+            mDebug->drawLine(HGE::Vector2f ( 400 + edge->a->x, 300 + edge->a->y ),
+                             HGE::Vector2f ( 400 + edge->b->x, 300 + edge->b->y ),
+                             10.0f,
+                             {255, 255, 255} );
         }
-
-//        for(auto const & edge : delaunay.mEdges) {
-//            mDebug->drawLine(HGE::Vector2f ( 400 + edge->a->x, 300 + edge->a->y ),
-//                             HGE::Vector2f ( 400 + edge->b->x, 300 + edge->b->y ), 10.0f );
-//        }
-
-        float index = 0.0f;
-        float step = 1.0f / delaunay.mVertices.size();
-        for(auto const & vert : delaunay.mVertices) {
-            mDebug->drawCircle(HGE::Vector2f ( vert->x + 400.0f , vert->y + 300.0f ),
-                    10.0f, 10.0f, {(step * index), 1.0f - (step * index), 0});
-            index += 1.0f;
-        }
-
-//        LOG_DEBUG("Trangulation!", "circumcenter",
-//                delaunay.mTriangles.begin()->circumcenter().x,
-//                delaunay.mTriangles.begin()->circumcenter().y)
-
 
         /* do a minimum angle check on graph? */
 
