@@ -5,7 +5,18 @@
 #ifndef HESTIA_ROGUELIKE_MATHS_TRIANGULATION_H
 #define HESTIA_ROGUELIKE_MATHS_TRIANGULATION_H
 
-// TODO: Create template for finding a pointer in a unique ptr vector
+#include <cmath>
+#include <algorithm>
+#include <vector>
+#include <memory>
+
+#include <maths/maths_types.h>
+#include <util/pointer_helper.h>
+
+#include "polygon.h"
+#include "triangle.h"
+#include "edge.h"
+#include "vertex.h"
 
 struct Triangulation {
     std::vector<std::unique_ptr<Vertex>> mVertices{ };
@@ -13,23 +24,34 @@ struct Triangulation {
     std::vector<std::unique_ptr<Triangle>> mTriangles{ };
 
     /* Delete a triangle */
-    void deleteTriangle(Triangle* triangle) {
-        auto it = std::find_if(mTriangles.begin(), mTriangles.end(), [&triangle] (const auto & tri) {
-            return tri.get() == triangle;
-        });
-        if(it != mTriangles.end()) {
-            mTriangles.erase(it);
-        }
+    void deleteTriangle(const Triangle* triangle) {
+        auto it = HGE::doesContainPointer(mTriangles, triangle);
+        mTriangles.erase(it);
     }
 
     /* Delete an edge */
-    void deleteEdge(Edge* edge) {
-        auto it = std::find_if(mEdges.begin(), mEdges.end(), [&edge] (const auto & e) {
-            return e.get() == edge;
+    void deleteEdge(const Edge* edge) {
+        auto it = HGE::doesContainPointer(mEdges, edge);
+        mEdges.erase(it);
+    }
+
+    void deleteVertex(const int id) {
+        const auto vertexIdMatch = [id] (const auto & vertex) {
+            return vertex->mId == id;
+        };
+
+        const auto triIt = std::remove_if(mTriangles.begin(), mTriangles.end(), [id, vertexIdMatch] (const auto &triangle) {
+             return std::any_of(triangle->mVertices.begin(), triangle->mVertices.end(), vertexIdMatch);
         });
-        if(it != mEdges.end()) {
-            mEdges.erase(it);
-        }
+        mTriangles.erase(triIt, mTriangles.end());
+
+        const auto edgeIt = std::remove_if(mEdges.begin(), mEdges.end(), [id, vertexIdMatch] (const auto &edge) {
+            return std::any_of(edge->mVertices.begin(), edge->mVertices.end(), vertexIdMatch);
+        });
+        mEdges.erase(edgeIt, mEdges.end());
+
+        const auto vertIt = std::remove_if(mVertices.begin(), mVertices.end(), vertexIdMatch);
+        mVertices.erase(vertIt, mVertices.end());
     }
 
     /** Deletes a set of triangles and edges from the main vectors. */

@@ -26,13 +26,13 @@ struct Triangle {
           mCircumcenter(circumcenter()),
           mCircumradius(circumcenterRadius(mCircumcenter)) { }
 
-    [[nodiscard]] const Vertex* a() const { return mVertices[0]; }
-    [[nodiscard]] const Vertex* b() const { return mVertices[1]; }
-    [[nodiscard]] const Vertex* c() const { return mVertices[2]; }
+    [[nodiscard]] const Vertex* a() const noexcept { return mVertices[0]; }
+    [[nodiscard]] const Vertex* b() const noexcept { return mVertices[1]; }
+    [[nodiscard]] const Vertex* c() const noexcept { return mVertices[2]; }
 
-    [[nodiscard]] const Edge* x() const { return mEdges[0]; }
-    [[nodiscard]] const Edge* y() const { return mEdges[1]; }
-    [[nodiscard]] const Edge* z() const { return mEdges[2]; }
+    [[nodiscard]] const Edge* x() const noexcept { return mEdges[0]; }
+    [[nodiscard]] const Edge* y() const noexcept { return mEdges[1]; }
+    [[nodiscard]] const Edge* z() const noexcept { return mEdges[2]; }
 
 private:
     [[nodiscard]]

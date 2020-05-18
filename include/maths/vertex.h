@@ -8,15 +8,16 @@
 #include <maths/maths_types.h>
 
 struct Vertex {
+    int mId;
     HGE::Vector2f mPosition;
     HGE::Pointf mMagnitude;
 
-    Vertex(HGE::Pointf x, HGE::Pointf y) : mPosition(x, y), mMagnitude(magnitude()) { }
-    explicit Vertex(HGE::Vector2f location) : mPosition(location), mMagnitude(magnitude()) { }
+    Vertex(int id, HGE::Pointf x, HGE::Pointf y) : mId(id), mPosition(x, y), mMagnitude(magnitude()) { }
+    explicit Vertex(int id, HGE::Vector2f location) : mId(id), mPosition(location), mMagnitude(magnitude()) { }
     ~Vertex() = default;
 
-    [[nodiscard]] const HGE::Pointf& x() const { return mPosition.x; }
-    [[nodiscard]] const HGE::Pointf& y() const { return mPosition.y; }
+    [[nodiscard]] const HGE::Pointf& x() const noexcept { return mPosition.x; }
+    [[nodiscard]] const HGE::Pointf& y() const noexcept { return mPosition.y; }
 
 private:
     [[nodiscard]]

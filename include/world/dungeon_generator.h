@@ -134,11 +134,11 @@ public:
                              mRooms.end());
 
         /* vector of midpoints */
-        auto midpoints = std::vector<HGE::Vector2f>();
+        auto midpoints = std::vector<std::pair<int, HGE::Vector2f>>();
 
         std::transform(mRooms.begin(), mRooms.end(),
                 std::back_inserter(midpoints),
-                [&] (const auto & room) { return room.mRect.midpoint(); });
+                [&] (const auto & room) { return std::make_pair(room.mId, room.mRect.midpoint()); });
 
         auto triangulation = delaunayTriangulationFromPoints(midpoints);
         //auto minimumSpanningTree = MinimumSpanningTree();

@@ -15,8 +15,8 @@ struct Edge {
 
     Edge(Vertex* a, Vertex* b) : mVertices({a, b}), mLength(length()) { }
 
-    [[nodiscard]] Vertex* a() const { return mVertices[0]; }
-    [[nodiscard]] Vertex* b() const { return mVertices[1]; }
+    [[nodiscard]] Vertex* a() const noexcept { return mVertices[0]; }
+    [[nodiscard]] Vertex* b() const noexcept { return mVertices[1]; }
 
 private:
     [[nodiscard]]

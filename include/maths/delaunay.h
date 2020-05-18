@@ -8,7 +8,10 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
+#include <optional>
+#include <memory>
 
+#include <maths/maths.h>
 #include <maths/maths_types.h>
 #include <util/logger.h>
 
@@ -22,7 +25,7 @@
 /* Function Declarations */
 static void removeSuperTriangle(Triangulation &triangulation);
 static Vertex getFurthestPointOfVertices(const std::vector<Vertex> &vertices);
-static void createSuperTriangleFromFurthestPoint(Triangulation &triangulation, Vertex & furthest);
+static void createSuperTriangleFromFurthestPoint(Triangulation &triangulation, const Vertex & furthest);
 
 static void getSharedAndNonSharedEdgesOfTriangles(const std::vector<Triangle*> &triangles,
                                       std::vector<Edge*> &edges,
@@ -37,13 +40,13 @@ static void createTrianglesFromNewPoint(Triangulation &triangulation,
  * @param points
  * @return
  */
-static Triangulation delaunayTriangulationFromPoints(const std::vector<HGE::Vector2f>& points) {
+static Triangulation delaunayTriangulationFromPoints(const std::vector<std::pair<int, HGE::Vector2f>>& points) {
 
     auto triangulation = Triangulation();
 
     auto vertices = std::vector<Vertex>();
     std::transform(points.begin(), points.end(), std::back_inserter(vertices), [] (const auto & point) {
-        return Vertex(point);
+        return Vertex(point.first, point.second);
     });
 
     auto radius = getFurthestPointOfVertices(vertices);
@@ -66,7 +69,6 @@ static Triangulation delaunayTriangulationFromPoints(const std::vector<HGE::Vect
     }
 
     removeSuperTriangle(triangulation);
-
     return std::move(triangulation);
 }
 
@@ -93,18 +95,18 @@ static Vertex getFurthestPointOfVertices(const std::vector<Vertex> &vertices) {
 }
 
 /** create a super triangle, bigger than the furthest point. */
-static void createSuperTriangleFromFurthestPoint(Triangulation &triangulation, Vertex & furthest) {
+static void createSuperTriangleFromFurthestPoint(Triangulation &triangulation, const Vertex & furthest) {
     constexpr static float sSuperTriangleOffset = 30.0;
     const static double adjacent = sqrt(3);
     const static double height = adjacent/2;
     auto radius = furthest.mMagnitude + sSuperTriangleOffset;
 
     auto vertA = triangulation.mVertices.emplace_back(
-            std::make_unique<Vertex>(-(radius * adjacent), -radius)).get();
+            std::make_unique<Vertex>(-1, -(radius * adjacent), -radius)).get();
     auto vertB = triangulation.mVertices.emplace_back(
-            std::make_unique<Vertex>(radius * adjacent, -radius)).get();
+            std::make_unique<Vertex>(-2, radius * adjacent, -radius)).get();
     auto vertC = triangulation.mVertices.emplace_back(
-            std::make_unique<Vertex>( 0.0f , ((radius * 2) + (radius * adjacent)) * 0.5)).get();
+            std::make_unique<Vertex>(-3, 0.0f , ((radius * 2) + (radius * adjacent)) * 0.5)).get();
 
     auto edgeAB = triangulation.mEdges.emplace_back(
             std::make_unique<Edge>(vertA, vertB)).get();
@@ -118,38 +120,10 @@ static void createSuperTriangleFromFurthestPoint(Triangulation &triangulation, V
 }
 
 /** remove the super triangle and attached trangles, edges and vertices. */
-// todo: refactor to less duplication
 static void removeSuperTriangle(Triangulation &triangulation) {
-
-    auto triangles = &triangulation.mTriangles;
-    auto edges = &triangulation.mEdges;
-    auto vertices = &triangulation.mVertices;
-    triangles->erase(std::remove_if(triangles->begin(), triangles->end(), [&] (const auto & triangle) {
-        return triangle->a() == vertices->at(0).get()
-               || triangle->a() == vertices->at(1).get()
-               || triangle->a() == vertices->at(2).get()
-               || triangle->b() == vertices->at(0).get()
-               || triangle->b() == vertices->at(1).get()
-               || triangle->b() == vertices->at(2).get()
-               || triangle->c() == vertices->at(0).get()
-               || triangle->c() == vertices->at(1).get()
-               || triangle->c() == vertices->at(2).get();
-    }), triangles->end());
-
-    /* get all edges linked to first 3 verts and delete them */
-    edges->erase(std::remove_if(edges->begin(), edges->end(), [&] (const auto & edge) {
-        return edge->a() == vertices->at(0).get()
-               || edge->a() == vertices->at(1).get()
-               || edge->a() == vertices->at(2).get()
-               || edge->b() == vertices->at(0).get()
-               || edge->b() == vertices->at(1).get()
-               || edge->b() == vertices->at(2).get();
-    }), edges->end());
-
-    /* delete first 3 verts */
-    vertices->erase(vertices->begin() + 2);
-    vertices->erase(vertices->begin() + 1);
-    vertices->erase(vertices->begin() + 0);
+    triangulation.deleteVertex(-1);
+    triangulation.deleteVertex(-2);
+    triangulation.deleteVertex(-3);
 }
 
 /** adds non shared edges to a polygon, and shared edges of triangles in an edge array. */
@@ -157,25 +131,30 @@ static void removeSuperTriangle(Triangulation &triangulation) {
 static void getSharedAndNonSharedEdgesOfTriangles(const std::vector<Triangle*> &triangles,
                                                   std::vector<Edge*> &edges,
                                                   Polygon &polygon) {
-    for(auto & triangle : triangles) {
-        for(auto & edge : triangle->mEdges) {
-            bool isNotShared = true;
-            for(auto & badTriangle : triangles) {
-                if(badTriangle != triangle) {
-                    if(badTriangle->mEdges[0] == edge ||
-                       badTriangle->mEdges[1] == edge ||
-                       badTriangle->mEdges[2] == edge) {
-                        isNotShared = false;
-                    }
 
+    bool isNotShared;
+    auto badTriangles = std::vector<Triangle*>{ };
+    for(const auto & triangle : triangles) {
+
+        badTriangles.clear();
+        std::copy_if(triangles.begin(), triangles.end(), std::back_inserter(badTriangles),
+                [&triangle] (const auto & tri) { return tri != triangle; });
+
+        for(auto & edge : triangle->mEdges) {
+            isNotShared = true;
+
+            for(auto & badTriangle : badTriangles) {
+                if(std::any_of(badTriangle->mEdges.begin(), badTriangle->mEdges.end(), [edge] (const auto & e) {
+                   return e == edge;
+                })) {
+                    isNotShared = false;
                 }
             }
 
             if(isNotShared) {
                 polygon.edges.push_back(edge);
             } else {
-                auto it = std::find(edges.begin(), edges.end(), edge);
-                if(it == edges.end()) {
+                if(std::find(edges.begin(), edges.end(), edge) == edges.end()) {
                     edges.push_back(edge);
                 }
             }
@@ -192,7 +171,6 @@ static void createTrianglesFromNewPoint(Triangulation &triangulation,
             std::make_unique<Vertex>(vert)).get();
 
     for(auto & edge : polygon.edges) {
-
         Edge* edgeNA;
         Edge* edgeBN;
         auto existingEdgeNA = getEdgeFromVertices(triangulation.mEdges, newVert, edge->a());
