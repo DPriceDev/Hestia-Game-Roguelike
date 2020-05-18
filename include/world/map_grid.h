@@ -10,7 +10,7 @@
 #include <engine.h>
 #include <array>
 
-#include "RoguePlayer.h"
+#include "player/RoguePlayer.h"
 #include "Wall.h"
 #include "floor_tile.h"
 #include "dungeon_generator.h"
@@ -40,8 +40,8 @@ class MapGrid : public HGE::GameObject {
         for(auto const & room : dungeonGen.getRooms()) {
             auto roomTile = createObject<FloorTile>();
             roomTile->mPosition->mTransform.mLocalPosition = HGE::Vector2f(400, 300) + (room.mRect.mPosition);
-            roomTile->mSprite->mTransform.mScale.x = room.mRect.mSize.x;
-            roomTile->mSprite->mTransform.mScale.y = room.mRect.mSize.y;
+            roomTile->mSprite->mTransform.mScale.x = room.mRect.mSize.x * 0.0f;
+            roomTile->mSprite->mTransform.mScale.y = room.mRect.mSize.y * 0.0f;
         }
     }
 

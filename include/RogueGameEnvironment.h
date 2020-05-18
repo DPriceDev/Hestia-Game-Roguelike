@@ -3,9 +3,9 @@
 
 #include <framework/game_envrionment.h>
 
-#include "RoguePlayer.h"
-#include "Wall.h"
-#include "map_grid.h"
+#include "player/RoguePlayer.h"
+#include "world/Wall.h"
+#include "world/map_grid.h"
 
 class RogueGameEnvironment : public HGE::GameEnvironment {
 

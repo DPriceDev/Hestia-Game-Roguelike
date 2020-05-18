@@ -14,7 +14,8 @@
 #include <util/logger.h>
 #include <framework/systems/debug_system.h>
 
-#include "delaunay.h"
+#include "maths/delaunay.h"
+#include "maths/minimum_spanning_tree.h"
 
 /**
  * Dungeon Room Struct
@@ -128,26 +129,26 @@ public:
 
         separateRooms();
 
-        mRooms.erase(std::remove_if(mRooms.begin(), mRooms.end(), [] (const auto & room) {
-            return room.mRect.area() < sMinimumRoomArea;
-        }), mRooms.end());
+        mRooms.erase(std::remove_if(mRooms.begin(), mRooms.end(),
+                     [] (const auto & room) { return room.mRect.area() < sMinimumRoomArea; }),
+                             mRooms.end());
 
         /* vector of midpoints */
         auto midpoints = std::vector<HGE::Vector2f>();
-        std::transform(mRooms.begin(), mRooms.end(), std::back_inserter(midpoints), [&] (const auto & room) {
-            return room.mRect.midpoint();
-        });
 
-        auto delaunay = Triangulation(midpoints);
+        std::transform(mRooms.begin(), mRooms.end(),
+                std::back_inserter(midpoints),
+                [&] (const auto & room) { return room.mRect.midpoint(); });
 
-        for(auto const & edge : delaunay.getEdges()) {
-            mDebug->drawLine(HGE::Vector2f ( 400 + edge->a->x, 300 + edge->a->y ),
-                             HGE::Vector2f ( 400 + edge->b->x, 300 + edge->b->y ),
+        auto triangulation = delaunayTriangulationFromPoints(midpoints);
+        //auto minimumSpanningTree = MinimumSpanningTree();
+
+        for(auto const & edge : triangulation.mEdges) {
+            mDebug->drawLine(HGE::Vector2f ( 400 + edge->a()->x(), 300 + edge->a()->y() ),
+                             HGE::Vector2f ( 400 + edge->b()->x(), 300 + edge->b()->y() ),
                              10.0f,
                              {255, 255, 255} );
         }
-
-        /* do a minimum angle check on graph? */
 
         /* generate paths between rooms */
 
