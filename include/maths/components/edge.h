@@ -7,7 +7,7 @@
 
 #include <cmath>
 
-#include "vertex.h"
+#include "maths/components/vertex.h"
 
 struct Edge {
     std::array<Vertex*, 2> mVertices;

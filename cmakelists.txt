@@ -25,5 +25,5 @@ set (INCLUDE_DIRS
         depends/hge/include)
 
 include_directories(${INCLUDE_DIRS})
-add_executable(hestia-Roguelike.app ${all_SRCS} include/world/map_grid.h include/world/floor_tile.h include/world/dungeon_generator.h include/maths/delaunay.h include/maths/polygon.h include/maths/minimum_spanning_tree.h include/maths/triangulation.h include/maths/triangle.h include/maths/edge.h include/maths/vertex.h)
+add_executable(hestia-Roguelike.app ${all_SRCS} include/world/map_grid.h include/world/floor_tile.h include/world/dungeon_generator.h include/maths/delaunay.h include/maths/components/polygon.h include/maths/minimum_spanning_tree.h include/maths/components/triangulation.h include/maths/components/triangle.h include/maths/components/edge.h include/maths/components/vertex.h include/maths/components/graph.h include/maths/components/connection.h include/maths/components/subtree.h)
 target_link_libraries(hestia-Roguelike.app hestia)

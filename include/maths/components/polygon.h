@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "edge.h"
+#include "maths/components/edge.h"
 
 struct Polygon {
     std::vector<Edge*> edges{ };

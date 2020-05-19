@@ -64,7 +64,6 @@ class DungeonGenerator {
     }
 
     /* */
-    /* todo: still sometimes fails, max iteration cap? before reset? or better method? */
     void separateRooms() {
         bool overlapsExist = true;
         while(overlapsExist) {
@@ -117,21 +116,12 @@ public:
     }
 
     void generate() {
-
-        for(int i = 0; i < sNumberOfInitialRooms; ++i) {
-            mRooms.emplace_back(Room(i));
-            mRooms.back().mRect = HGE::Rectf(randomPointInCircle(),
-                    { HGE::roundValueToMultipleOf(HGE::randomNumberBetween<float>(sMinimumRoomSize,
-                            sMaximumRoomSize), 1.0f),
-                      HGE::roundValueToMultipleOf(HGE::randomNumberBetween<float>(sMinimumRoomSize,
-                              sMaximumRoomSize), 1.0f) });
-        }
-
+        mRooms = generateRandomRooms(sNumberOfInitialRooms);
         separateRooms();
 
-        mRooms.erase(std::remove_if(mRooms.begin(), mRooms.end(),
-                     [] (const auto & room) { return room.mRect.area() < sMinimumRoomArea; }),
-                             mRooms.end());
+        auto removeIt = std::remove_if(mRooms.begin(), mRooms.end(),
+                     [] (const auto & room) { return room.mRect.area() < sMinimumRoomArea; });
+        mRooms.erase(removeIt, mRooms.end());
 
         /* vector of midpoints */
         auto midpoints = std::vector<std::pair<int, HGE::Vector2f>>();
@@ -141,20 +131,53 @@ public:
                 [&] (const auto & room) { return std::make_pair(room.mId, room.mRect.midpoint()); });
 
         auto triangulation = delaunayTriangulationFromPoints(midpoints);
-        //auto minimumSpanningTree = MinimumSpanningTree();
+        auto minimumSpanTree = minimumSpanningTreeFromDelaunayTriangulation(triangulation);
+//
+//        for(auto const & edge : triangulation.mEdges) {
+//            mDebug->drawLine(HGE::Vector2f ( 400 + edge->a()->x(), 300 + edge->a()->y() ),
+//                             HGE::Vector2f ( 400 + edge->b()->x(), 300 + edge->b()->y() ),
+//                             10.0f,
+//                             {255, 255, 255} );
+//        }
 
-        for(auto const & edge : triangulation.mEdges) {
-            mDebug->drawLine(HGE::Vector2f ( 400 + edge->a()->x(), 300 + edge->a()->y() ),
-                             HGE::Vector2f ( 400 + edge->b()->x(), 300 + edge->b()->y() ),
+        for(auto const & connection : minimumSpanTree.mConnections) {
+            auto a = std::find_if(triangulation.mVertices.begin(), triangulation.mVertices.end(),
+                    [&connection] (std::unique_ptr<Vertex> &vert) {
+                        return vert->mId == connection.mA;
+                    })->get();
+
+            auto b = std::find_if(triangulation.mVertices.begin(), triangulation.mVertices.end(),
+                   [&connection] (std::unique_ptr<Vertex> &vert) {
+                       return vert->mId == connection.mB;
+                   })->get();
+
+            mDebug->drawLine(HGE::Vector2f ( 400 + a->x(), 300 + a->y() ),
+                             HGE::Vector2f ( 400 + b->x(), 300 + b->y() ),
                              10.0f,
-                             {255, 255, 255} );
+                             {255, 0, 255} );
         }
+
 
         /* generate paths between rooms */
 
         /* fill out paths with smaller rooms */
 
         /* fin and return */
+    }
+
+    std::vector<Room> generateRandomRooms(const int numberOfRooms) {
+        std::vector<Room> rooms{ };
+
+        for(int i = 0; i < numberOfRooms; ++i) {
+            rooms.emplace_back(Room(i));
+            rooms.back().mRect = HGE::Rectf(randomPointInCircle(),
+                                             { HGE::roundValueToMultipleOf(HGE::randomNumberBetween<float>(sMinimumRoomSize,
+                            sMaximumRoomSize), 1.0f),
+                      HGE::roundValueToMultipleOf(HGE::randomNumberBetween<float>(sMinimumRoomSize,
+                              sMaximumRoomSize), 1.0f) });
+        }
+
+        return std::move(rooms);
     }
 };
 

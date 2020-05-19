@@ -16,7 +16,7 @@
 #include "polygon.h"
 #include "triangle.h"
 #include "edge.h"
-#include "vertex.h"
+#include "maths/components/vertex.h"
 
 struct Triangulation {
     std::vector<std::unique_ptr<Vertex>> mVertices{ };

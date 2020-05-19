@@ -12,7 +12,7 @@
 
 #include <maths/maths_types.h>
 
-#include "edge.h"
+#include "maths/components/edge.h"
 
 struct Triangle {
     std::array<Vertex*, 3> mVertices;

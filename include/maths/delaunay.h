@@ -15,58 +15,63 @@
 #include <maths/maths_types.h>
 #include <util/logger.h>
 
-#include "polygon.h"
-#include "triangle.h"
-#include "edge.h"
-#include "vertex.h"
+#include "maths/components/polygon.h"
+#include "maths/components/triangle.h"
+#include "maths/components/edge.h"
+#include "maths/components/vertex.h"
 
-#include "triangulation.h"
+#include "maths/components/triangulation.h"
 
 /* Function Declarations */
 static void removeSuperTriangle(Triangulation &triangulation);
 static Vertex getFurthestPointOfVertices(const std::vector<Vertex> &vertices);
 static void createSuperTriangleFromFurthestPoint(Triangulation &triangulation, const Vertex & furthest);
 
-static void getSharedAndNonSharedEdgesOfTriangles(const std::vector<Triangle*> &triangles,
-                                      std::vector<Edge*> &edges,
-                                      Polygon &polygon);
+static std::pair<std::vector<Edge*>, Polygon> getSharedAndNonSharedEdgesOfTriangles(const std::vector<Triangle*>&triangles);
 
 static void createTrianglesFromNewPoint(Triangulation &triangulation,
-                                        const Vertex &vert,
-                                        const Polygon &polygon);
+                                            const Vertex &vert,
+                                            const Polygon &polygon);
 
 /**
+ * Delaunay Triangulation from Points
  *
- * @param points
- * @return
+ * This method parses a number of points with ids into a triangulation. it uses a delaunay process to insert each point
+ * into the triangulation mesh.
+ * @param points            - vector of 2d points and id's
+ * @return Triangulation    - triangulation containing vertices, edges and triangles
  */
 static Triangulation delaunayTriangulationFromPoints(const std::vector<std::pair<int, HGE::Vector2f>>& points) {
+    Triangulation triangulation{ };
 
-    auto triangulation = Triangulation();
-
-    auto vertices = std::vector<Vertex>();
-    std::transform(points.begin(), points.end(), std::back_inserter(vertices), [] (const auto & point) {
+    auto const convertToVertices = [] (const std::pair<int, HGE::Vector2f> & point) {
         return Vertex(point.first, point.second);
-    });
+    };
 
-    auto radius = getFurthestPointOfVertices(vertices);
+    std::vector<Vertex> vertices{ };
+    std::transform(points.begin(), points.end(), std::back_inserter(vertices), convertToVertices);
+
+    Vertex radius{ getFurthestPointOfVertices(vertices) };
     createSuperTriangleFromFurthestPoint(triangulation, radius);
 
-    for(const auto & vert: vertices) {
+    std::for_each(vertices.begin(), vertices.end(), [&triangulation] (const Vertex & vert) {
         auto badTriangles = std::vector<Triangle*>();
+        auto polygon = Polygon();
+        auto badEdges = std::vector<Edge*>();
 
-        for(auto & triangle : triangulation.mTriangles) {
+        const auto isInTriangleCircumcenter = [&vert, &badTriangles] (const std::unique_ptr<Triangle> & triangle) {
             if(HGE::isPointInACircle(vert.mPosition, triangle->mCircumcenter, triangle->mCircumradius)) {
                 badTriangles.push_back(triangle.get());
             }
-        }
+        };
 
-        auto polygon = Polygon();
-        auto badEdges = std::vector<Edge*>();
-        getSharedAndNonSharedEdgesOfTriangles(badTriangles, badEdges, polygon);
+        std::for_each(triangulation.mTriangles.begin(), triangulation.mTriangles.end(), isInTriangleCircumcenter);
+
+        std::tie(badEdges, polygon) = getSharedAndNonSharedEdgesOfTriangles(badTriangles);
         triangulation.deleteTrianglesAndEdges(badTriangles, badEdges);
+
         createTrianglesFromNewPoint(triangulation, vert, polygon);
-    }
+    });
 
     removeSuperTriangle(triangulation);
     return std::move(triangulation);
@@ -127,39 +132,30 @@ static void removeSuperTriangle(Triangulation &triangulation) {
 }
 
 /** adds non shared edges to a polygon, and shared edges of triangles in an edge array. */
-// todo: refactor to stl
-static void getSharedAndNonSharedEdgesOfTriangles(const std::vector<Triangle*> &triangles,
-                                                  std::vector<Edge*> &edges,
-                                                  Polygon &polygon) {
+static std::pair<std::vector<Edge*>, Polygon> getSharedAndNonSharedEdgesOfTriangles(
+        const std::vector<Triangle*>&triangles) {
 
-    bool isNotShared;
-    auto badTriangles = std::vector<Triangle*>{ };
-    for(const auto & triangle : triangles) {
+    std::map<Edge*, int> edgeMap{ };
+    std::vector<Edge*> edges{ };
+    Polygon polygon{ };
 
-        badTriangles.clear();
-        std::copy_if(triangles.begin(), triangles.end(), std::back_inserter(badTriangles),
-                [&triangle] (const auto & tri) { return tri != triangle; });
+    const auto mapNumberOfEdges = [&edgeMap] (const Triangle* tri) {
+        std::for_each(tri->mEdges.begin(), tri->mEdges.end(), [&edgeMap] (Edge* edge) {
+            edgeMap[edge] += 1;
+        });
+    };
 
-        for(auto & edge : triangle->mEdges) {
-            isNotShared = true;
-
-            for(auto & badTriangle : badTriangles) {
-                if(std::any_of(badTriangle->mEdges.begin(), badTriangle->mEdges.end(), [edge] (const auto & e) {
-                   return e == edge;
-                })) {
-                    isNotShared = false;
-                }
-            }
-
-            if(isNotShared) {
-                polygon.edges.push_back(edge);
-            } else {
-                if(std::find(edges.begin(), edges.end(), edge) == edges.end()) {
-                    edges.push_back(edge);
-                }
-            }
+    const auto separateEdgesIfShared = [&edges, &polygon] (const std::pair<Edge*, int> pair) {
+        if(pair.second == 1) {
+            polygon.edges.push_back(pair.first);
+        } else {
+            edges.push_back(pair.first);
         }
-    }
+    };
+
+    std::for_each(triangles.begin(), triangles.end(), mapNumberOfEdges);
+    std::for_each(edgeMap.begin(), edgeMap.end(), separateEdgesIfShared);
+    return std::make_pair(std::move(edges), std::move(polygon));
 }
 
 /** Constructs triangles from a point and a polygon. */
