@@ -16,22 +16,14 @@
 
 #include "maths/delaunay.h"
 #include "maths/minimum_spanning_tree.h"
+#include "room.h"
+#include "path.h"
+#include "dungeon_grid.h"
 
-/**
- * Dungeon Room Struct
- */
-struct Room {
-    int mId;
-    HGE::Rectf mRect{ };
-    HGE::Vector2f mMovement{ };
-
-    explicit Room(int id) : mId(id) { }
-    Room(int id, HGE::Rectf rect) : mId(id), mRect(rect) { }
-    ~Room() = default;
-
-    bool operator!=(const Room & other) const {
-        return this->mId != other.mId;
-    }
+struct Dungeon {
+    std::vector<Room> mMainRooms;
+    std::vector<Room> mMinorRooms;
+    std::vector<Path> mPaths;
 };
 
 /**
@@ -55,7 +47,7 @@ class DungeonGenerator {
     std::uniform_real_distribution<float> mRadiusDistribution { 0, S_RADIUS_SQRD };
     std::uniform_real_distribution<float> mAngleDistribution { 0, S_TWO_PI };
 
-    /* */
+    /** Get a random point in a circle */
     HGE::Vector2f randomPointInCircle() {
         float radius = std::sqrt(mRadiusDistribution(mGenerator));
         float angle = mAngleDistribution(mGenerator);
@@ -63,7 +55,7 @@ class DungeonGenerator {
                  HGE::roundValueToMultipleOf(radius * sin(angle), 1.0f)};
     }
 
-    /* */
+    /** Separate a set of rooms so that none overlap */
     void separateRooms() {
         bool overlapsExist = true;
         while(overlapsExist) {
@@ -107,23 +99,72 @@ class DungeonGenerator {
         }
     }
 
+    /** Generate a set of random rooms at random locations */
+    std::vector<Room> generateRandomRooms(const int numberOfRooms) {
+        std::vector<Room> rooms{ };
+
+        for(int i = 0; i < numberOfRooms; ++i) {
+            auto width = HGE::roundValueToMultipleOf(
+                    HGE::randomNumberBetween<float>(sMinimumRoomSize, sMaximumRoomSize), 1.0f);
+
+            auto height = HGE::roundValueToMultipleOf(
+                    HGE::randomNumberBetween<float>(sMinimumRoomSize, sMaximumRoomSize), 1.0f);
+
+            rooms.emplace_back(Room(i, HGE::Rectf(randomPointInCircle(), { width, height })));
+        }
+        return std::move(rooms);
+    }
+
+    /** create a dungeon grid that will fit all the rooms and then insert the rooms into the grid. */
+    DungeonGrid createDungeonGridFromRooms(std::vector<Room>& rooms) {
+        const auto highestRoom = [] (const auto & a, const auto & b) { return a.mRect.mPosition.y < b.mRect.mPosition.y; };
+        const auto leftMostRoom = [] (const auto & a, const auto & b) { return a.mRect.mPosition.x > b.mRect.mPosition.x; };
+        const auto rightMostRoom = [] (const auto & a, const auto & b) { return a.mRect.mPosition.x < b.mRect.mPosition.x; };
+        const auto lowestRoom = [] (const auto & a, const auto & b) { return a.mRect.mPosition.y > b.mRect.mPosition.y; };
+
+        auto top = std::max_element(mRooms.begin(), mRooms.end(), highestRoom);
+        auto left = std::max_element(mRooms.begin(), mRooms.end(), leftMostRoom);
+        auto right = std::max_element(mRooms.begin(), mRooms.end(), rightMostRoom);
+        auto bottom = std::max_element(mRooms.begin(), mRooms.end(), lowestRoom);
+
+        auto grid = DungeonGrid(top->mRect.topLeft().y,
+                                right->mRect.topRight().x,
+                                left->mRect.topLeft().x,
+                                bottom->mRect.bottomLeft().y);
+
+        /* */
+        //grid.insertRooms(rooms);
+
+        return std::move(grid);
+    }
+
 public:
+    /** todo: replace with a static method? */
     explicit DungeonGenerator(HGE::DebugComponent* debug) : mDebug(debug) { }
     ~DungeonGenerator() = default;
 
+    /** returns the room list */
     const std::vector<Room>& getRooms() {
         return mRooms;
     }
 
+    /** generate the dungeon */
     void generate() {
         mRooms = generateRandomRooms(sNumberOfInitialRooms);
         separateRooms();
 
-        auto removeIt = std::remove_if(mRooms.begin(), mRooms.end(),
-                     [] (const auto & room) { return room.mRect.area() < sMinimumRoomArea; });
-        mRooms.erase(removeIt, mRooms.end());
+        /* todo refactor out as a method */
+        const auto isAreaSmall = [] (const auto & room) {
+            return room.mRect.area() < sMinimumRoomArea;
+        };
+
+        auto unusedRooms = std::vector<Room>();
+        auto unusedIt = std::remove_if(mRooms.begin(), mRooms.end(), isAreaSmall);
+        std::move(unusedIt, mRooms.end(), std::back_inserter(unusedRooms));
+        mRooms.erase(unusedIt, mRooms.end());
 
         /* vector of midpoints */
+        /* todo refactor out as a method */
         auto midpoints = std::vector<std::pair<int, HGE::Vector2f>>();
 
         std::transform(mRooms.begin(), mRooms.end(),
@@ -132,14 +173,8 @@ public:
 
         auto triangulation = delaunayTriangulationFromPoints(midpoints);
         auto minimumSpanTree = minimumSpanningTreeFromDelaunayTriangulation(triangulation);
-//
-//        for(auto const & edge : triangulation.mEdges) {
-//            mDebug->drawLine(HGE::Vector2f ( 400 + edge->a()->x(), 300 + edge->a()->y() ),
-//                             HGE::Vector2f ( 400 + edge->b()->x(), 300 + edge->b()->y() ),
-//                             10.0f,
-//                             {255, 255, 255} );
-//        }
 
+        
         for(auto const & connection : minimumSpanTree.mConnections) {
             auto a = std::find_if(triangulation.mVertices.begin(), triangulation.mVertices.end(),
                     [&connection] (std::unique_ptr<Vertex> &vert) {
@@ -157,27 +192,33 @@ public:
                              {255, 0, 255} );
         }
 
+        auto grid = createDungeonGridFromRooms(mRooms);
+        *grid[-50][-50] = GridTile(GridTileType::ROOM_FLOOR);
 
+        /* todo refactor out as a method */
         /* generate paths between rooms */
+        for(auto const & connection : minimumSpanTree.mConnections) {
 
-        /* fill out paths with smaller rooms */
+            /* get connected rooms */
+            auto roomA = std::find_if(mRooms.begin(), mRooms.end(), [&] (const auto & room) {
+                return connection.mA == room.mId;
+            });
 
-        /* fin and return */
-    }
+            auto roomB = std::find_if(mRooms.begin(), mRooms.end(), [&] (const auto & room) {
+                return connection.mB == room.mId;
+            });
 
-    std::vector<Room> generateRandomRooms(const int numberOfRooms) {
-        std::vector<Room> rooms{ };
+            /* for each connection, pass the map grid and connection a pathing class */
 
-        for(int i = 0; i < numberOfRooms; ++i) {
-            rooms.emplace_back(Room(i));
-            rooms.back().mRect = HGE::Rectf(randomPointInCircle(),
-                                             { HGE::roundValueToMultipleOf(HGE::randomNumberBetween<float>(sMinimumRoomSize,
-                            sMaximumRoomSize), 1.0f),
-                      HGE::roundValueToMultipleOf(HGE::randomNumberBetween<float>(sMinimumRoomSize,
-                              sMaximumRoomSize), 1.0f) });
+            /* check if any rooms intersect the path */
+
+            /* insert minor rooms that intersect the path */
+
+            /* update path and insert that into the map grid */
+
         }
 
-        return std::move(rooms);
+        /* todo: return dungeon */
     }
 };
 
