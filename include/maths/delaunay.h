@@ -141,7 +141,11 @@ static std::pair<std::vector<Edge*>, Polygon> getSharedAndNonSharedEdgesOfTriang
 
     const auto mapNumberOfEdges = [&edgeMap] (const Triangle* tri) {
         std::for_each(tri->mEdges.begin(), tri->mEdges.end(), [&edgeMap] (Edge* edge) {
-            edgeMap[edge] += 1;
+            if(edgeMap.find(edge) != edgeMap.end()) {
+                edgeMap.at(edge) += 1;
+            } else {
+                edgeMap.insert(std::make_pair(edge, 1));
+            }
         });
     };
 

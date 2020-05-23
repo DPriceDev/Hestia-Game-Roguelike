@@ -53,12 +53,12 @@ static Graph minimumSpanningTreeFromDelaunayTriangulation(const Triangulation &t
         auto edge = *(edges.begin() + offset);
 
         /* if not, select the first tree and combine the connect vertex vectors */
-        if(trees[edge.mA] != trees[edge.mB]) {
-            *trees[edge.mA] += *trees[edge.mB];
-            trees[edge.mA]->mConnections.push_back(edge);
+        if(trees.at(edge.mA) != trees.at(edge.mB)) {
+            *trees.at(edge.mA) += *trees.at(edge.mB);
+            trees.at(edge.mA)->mConnections.push_back(edge);
 
-            for(auto & id : trees[edge.mA]->mConnectedPoints) {
-                trees[id] = trees[edge.mA];
+            for(auto & id : trees.at(edge.mA)->mConnectedPoints) {
+                trees.at(id) = trees.at(edge.mA);
             }
 
             edges.erase(edges.begin());

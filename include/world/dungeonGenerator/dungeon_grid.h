@@ -14,6 +14,7 @@
 #include "room.h"
 #include "path.h"
 
+/* todo: template this class */
 class DungeonGrid {
     class Row {
         std::vector<std::unique_ptr<GridTile>> mColumns;
@@ -46,18 +47,6 @@ public:
         std::generate_n(std::back_inserter(mGrid), rowCount, [this, &columnCount] {
             return std::move(Row(mOffsetX, columnCount));
         });
-    }
-
-    void insertRooms(const std::vector<Room*>& rooms) {
-    }
-
-    void insertRoom(const Room* room) {
-    }
-
-    void insertPaths(const std::vector<Path*>& paths) {
-    }
-
-    void insertPath(const Path* path) {
     }
 
     Row& operator[](int index) {
