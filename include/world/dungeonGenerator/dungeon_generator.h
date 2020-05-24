@@ -139,10 +139,11 @@ class DungeonGenerator {
         auto bottom = std::max_element(rooms.begin(), rooms.end(), lowestRoom)->get()->mRect.bottomLeft().y;
 
         auto width = right - left + (sGridSpacing * 2);
-        auto height = right - left + (sGridSpacing * 2);
+        auto height = top - bottom + (sGridSpacing * 2);
         auto originX = left - sGridSpacing;
         auto originY = bottom - sGridSpacing;
 
+        /* todo: pointer issue? grid size? */
         auto newGrid = AAF::Grid2D<std::unique_ptr<GridTile>>(width, height, originX, originY);
         return std::move(newGrid);
     }
@@ -236,9 +237,7 @@ public:
 
         /* todo refactor out as a method */
         /* generate paths between rooms */
-        for(int c = 0; c < 5; ++c) {
-
-            const auto & connection = minimumSpanTree.mConnections.at(c);
+        for(auto & connection : minimumSpanTree.mConnections) {
 
             /* get connected rooms */
             auto roomA = std::find_if(mRooms.begin(), mRooms.end(), [&] (const auto & room) {
@@ -259,7 +258,12 @@ public:
 
             /* update path and insert that into the map grid */
 
-            auto path = generatePath(grid, roomA->get(), roomB->get());
+            auto pathSearcher = BreadthPathGenerator();
+
+            auto start = HGE::Vector2i(roomA->get()->mRect.mPosition.x, roomA->get()->mRect.mPosition.y);
+            auto finish = HGE::Vector2i(roomB->get()->mRect.mPosition.x, roomB->get()->mRect.mPosition.y);
+
+            auto path = pathSearcher.generatePath(grid, start, finish);
 
             for(int i = 1; i < path.mNodes.size(); ++i) {
                 auto nodeA = path.mNodes.at(i - 1);

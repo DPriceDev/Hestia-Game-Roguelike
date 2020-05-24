@@ -8,6 +8,7 @@
 #include <queue>
 #include <memory>
 #include <array>
+#include <map>
 #include <algorithm>
 
 #include <maths/maths.h>
@@ -16,179 +17,118 @@
 #include <grid.h>
 #include "grid_tile.h"
 
-#include "room.h"
+class BreadthPathGenerator {
+    const std::array<HGE::Vector2i, 4> sOffsets{
+        HGE::Vector2i { 0, 1 },
+        HGE::Vector2i { 1, 0 },
+        HGE::Vector2i { 0, -1 },
+        HGE::Vector2i { -1, 0 } };
 
-// todo: pointerfy?
-struct Tile {
-    int x, y;
-    int score{ 9999 };
-    bool isVisited{ false };
-    bool isInQueue{ false };
+    struct Tile {
+        HGE::Vector2i mPosition;
+        int mScore{ 99999999 };
+        bool mVisited{ false };
 
-    Tile(int x, int y) : x(x), y(y) { }
-};
-
-/* todo: pointerfy */
-/* todo: is this struct needed? */
-struct AdjacentTiles {
-    std::array<Tile*, 4> mTiles;
-
-    AdjacentTiles() = default;
-    AdjacentTiles(Tile* top, Tile* bottom, Tile* left, Tile* right)
-        : mTiles({top, right, bottom, left}) { }
-
-    Tile* & top() { return mTiles[0]; }
-    Tile* & right() { return mTiles[1]; }
-    Tile* & bottom() { return mTiles[2]; }
-    Tile* & left() { return mTiles[3]; }
-};
-
-/**
- * todo: make bounds a struct
- * @param bounds
- * @param x
- * @param y
- * @return
- */
-static bool isPointInBounds(const std::array<long, 4> &bounds, const int x, const int y) {
-    return x <= bounds.at(0) && x >= bounds.at(2)
-        && y <= bounds.at(1) && y >= bounds.at(3);
-}
-
-/**
- *
- * @param grid
- * @param pTiles
- * @param tile
- * @return
- */
-static AdjacentTiles getAdjacentTiles(AAF::Grid2D<std::unique_ptr<GridTile>> &grid,
-                                      std::vector<std::unique_ptr<Tile>> &pTiles,
-                                      const Tile* tile) {
-
-    constexpr std::array<int, 4> horizontal = {0, 1, 0, -1};
-    constexpr std::array<int, 4> vertical = {1, 0, -1, 0};
-    auto adj = AdjacentTiles();
-    int index = 0;
-    for(auto & adjTile : adj.mTiles) {
-
-        const auto isSameTile = [&tile, &horizontal, &vertical, &index] (const auto & pTile) {
-            return pTile->x == tile->x + horizontal[index]
-                && pTile->y == tile->y + vertical[index];
-        };
-
-        if(!isPointInBounds(grid.getBounds(), tile->x + horizontal[index], tile->y + vertical[index])) {
-            continue;
-        }
-
-        auto it = std::find_if(pTiles.begin(), pTiles.end(), isSameTile);
-
-        if(it == pTiles.end()) {
-            auto ptr = pTiles.emplace_back(
-                    std::make_unique<Tile>(tile->x + horizontal[index],tile->y + vertical[index])).get();
-            adj.mTiles[index] = ptr;
-        } else {
-           adj.mTiles[index] = it->get();
-        }
-        ++index;
-    }
-
-    /* move return? */
-    return adj;
-}
-
-/**
- *
- * @param grid
- * @param roomA
- * @param roomB
- */
-static Path generatePath(AAF::Grid2D<std::unique_ptr<GridTile>> &grid, Room* roomA, Room* roomB) {
-
-    // get start
-    //roomA->mRect.midpoint();
-
-    std::vector<std::unique_ptr<Tile>> pTiles;
-    std::queue<Tile*> tileQueue;
-
-    /* add room corners as 9999 score tiles */
-
-    /* add start square (room midpoint, floor float) */
-    auto ptr = pTiles.emplace_back(
-            std::make_unique<Tile>(roomA->mRect.mPosition.x,
-                                   roomA->mRect.mPosition.y)).get();
-    ptr->score = 0;
-    tileQueue.push(ptr);
-
-    bool isFinished{ false };
-    while(!tileQueue.empty() && !isFinished) {
-
-        auto adjacentTiles = getAdjacentTiles(grid, pTiles, tileQueue.front());
-        for(auto & adjTile : adjacentTiles.mTiles) {
-
-            /* todo: do not parse if set as ignore */
-            if(adjTile == nullptr) {
-                continue;
-            }
-
-            if(adjTile->score > tileQueue.front()->score) {
-                adjTile->score = tileQueue.front()->score + 1;
-            }
-
-            /* todo: if wall of another room or a path, do not add to queue */
-
-            if(!adjTile->isVisited && !adjTile->isInQueue) {
-                adjTile->isInQueue = true;
-                tileQueue.push(adjTile);
-            }
-
-            // todo: get rid of static casts!
-            if(adjTile->x == static_cast<int>(roomB->mRect.mPosition.x)
-                && adjTile->y == static_cast<int>(roomB->mRect.mPosition.y)) {
-                isFinished = true;
-            }
-        }
-
-        /* remove tile */
-        tileQueue.front()->isVisited = true;
-        tileQueue.pop();
-    }
-
-    const auto getFinishTile = [&roomB] (const std::unique_ptr<Tile> & tile) {
-        return tile->x == roomB->mRect.mPosition.x
-            && tile->y == roomB->mRect.mPosition.y;
+        Tile() = default;
+        Tile(const HGE::Vector2i &position, const int &score, bool visited)
+                : mPosition(position), mScore(score), mVisited(visited) { }
     };
 
-    auto currentTile = std::find_if(pTiles.begin(), pTiles.end(), getFinishTile)->get();
-    std::vector<Tile*> pathTiles { currentTile };
+    /**
+     *
+     */
+    template<class Type>
+    auto breadthSearch(const AAF::Grid2D<Type> &grid, const HGE::Vector2i &start, const HGE::Vector2i &finish) {
 
-    while(currentTile != pTiles.front().get()) {
-        auto adjacent = getAdjacentTiles(grid, pTiles, currentTile);
+        auto startTile = Tile(start, 0, true);
+        auto tileGrid = AAF::Grid2D<Tile>(grid.gridParameters());
+        tileGrid.at(start.x, start.y) = startTile;
+        auto tileQueue = std::queue<Tile>{ { startTile } };
+        bool endReached{ false };
 
-        const auto lowestScore = [] (const auto a, const auto b) {
-            return a->score < b->score && b->score >= 0;
-        };
+        while(!tileQueue.empty() && !endReached) {
 
-        currentTile = *std::min_element(adjacent.mTiles.begin(), adjacent.mTiles.end(), lowestScore);
-        pathTiles.push_back(currentTile);
+            auto newScore = tileQueue.front().mScore + 1;
+            for(auto & offset: sOffsets) {
+                auto adjPosition = tileQueue.front().mPosition + offset;
+                if(grid.isPointInGrid(adjPosition.x, adjPosition.y)) {
+
+                    auto adjTile = tileGrid.at(adjPosition.x, adjPosition.y);
+
+                    if(!adjTile.mVisited) {
+                        auto newTile = Tile(adjPosition, newScore, true);
+                        tileGrid.at(adjPosition.x, adjPosition.y) = newTile;
+                        tileQueue.push(newTile);
+                    } else if (adjTile.mScore > newScore) {
+                        adjTile.mScore = newScore;
+                    }
+
+                    if(adjPosition == finish) {
+                        endReached = true;
+                        break;
+                    }
+                }
+            }
+            tileQueue.pop();
+        }
+        return tileGrid;
     }
 
-    // when position found, trace back the path by getting the next lowest number.
-    // prefer to go in a straight line compared to zig zag if the next lowest is straight, not angled
+    /**
+     *
+     */
+    auto traceBackPath(AAF::Grid2D<Tile> &tileGrid, const HGE::Vector2i &start, const HGE::Vector2i &finish) {
 
-    // todo: map all paths and get one with lowest number of turns?
+        std::vector<HGE::Vector2i> pathNodes{ finish };
+        HGE::Vector2i currentNode = finish;
 
-    // translate the path into the path class, list of points, list of connected ids
+        while(currentNode != start) {
 
-    const auto pathTilesToVector2f = [] (const auto & tile) {
-            return HGE::Vector2f(tile->x, tile->y);
-    };
+            /* get valid adjacent */
+            auto adjacent = std::vector<Tile>();
+            for(const auto & offset : sOffsets) {
+                auto adjPosition = currentNode + offset;
+                if(tileGrid.isPointInGrid(adjPosition.x, adjPosition.y)) {
+                    adjacent.push_back(tileGrid.at(adjPosition.x, adjPosition.y));
+                }
+            }
 
-    auto path = Path();
-    std::transform(pathTiles.begin(), pathTiles.end(), std::back_inserter(path.mNodes), pathTilesToVector2f);
-    path.mConnectedRooms.push_back(roomA->mId);
-    path.mConnectedRooms.push_back(roomB->mId);
-    return path;
-}
+            /* check for lowest score */
+            const auto lowestScore = [] (const auto & a, const auto & b) {
+                return a.mScore < b.mScore;
+            };
+            auto it = std::min_element(adjacent.begin(), adjacent.end(), lowestScore);
+
+            /* set it as current node and add to pathNodes */
+            currentNode = it->mPosition;
+            pathNodes.push_back(it->mPosition);
+        }
+
+        auto path = Path();
+        std::transform(pathNodes.begin(), pathNodes.end(), std::back_inserter(path.mNodes), [] (const auto & node) {
+            return HGE::Vector2f(node.x, node.y);
+        });
+
+        return path;
+    }
+
+public:
+    BreadthPathGenerator() = default;
+    ~BreadthPathGenerator() = default;
+
+    /**
+     *
+     * @tparam Type
+     * @param grid
+     * @param start
+     * @param finish
+     * @return
+     */
+    template<class Type>
+    Path generatePath(const AAF::Grid2D<Type> &grid, const HGE::Vector2i &start, const HGE::Vector2i &finish) {
+        auto tileGrid = breadthSearch(grid, start, finish);
+        return traceBackPath(tileGrid, start, finish);
+    }
+};
 
 #endif //HESTIA_ROGUELIKE_WORLD_DUNGEONGENERATOR_PATH_GENERATOR_H
