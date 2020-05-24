@@ -22,8 +22,9 @@ file(GLOB all_SRCS
 
 set (INCLUDE_DIRS
         include
-        depends/hge/include)
+        depends/hge/include
+        depends/hge/depends/athena/include)
 
 include_directories(${INCLUDE_DIRS})
-add_executable(hestia-Roguelike.app ${all_SRCS} include/world/map_grid.h include/world/floor_tile.h include/world/dungeonGenerator/dungeon_generator.h include/maths/delaunay.h include/maths/components/polygon.h include/maths/minimum_spanning_tree.h include/maths/components/triangulation.h include/maths/components/triangle.h include/maths/components/edge.h include/maths/components/vertex.h include/maths/components/graph.h include/maths/components/connection.h include/maths/components/subtree.h include/world/dungeonGenerator/dungeon_grid.h include/world/dungeonGenerator/grid_tile.h include/world/dungeonGenerator/room.h include/world/dungeonGenerator/path.h include/world/dungeonGenerator/path_generator.h)
+add_executable(hestia-Roguelike.app ${all_SRCS})
 target_link_libraries(hestia-Roguelike.app hestia)

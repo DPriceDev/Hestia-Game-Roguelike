@@ -13,7 +13,9 @@
 #include <maths/maths.h>
 #include <util/logger.h>
 
-#include "dungeon_grid.h"
+#include <grid.h>
+#include "grid_tile.h"
+
 #include "room.h"
 
 // todo: pointerfy?
@@ -48,7 +50,7 @@ struct AdjacentTiles {
  * @param y
  * @return
  */
-static bool isPointInBounds(const std::array<int, 4> &bounds, const int x, const int y) {
+static bool isPointInBounds(const std::array<long, 4> &bounds, const int x, const int y) {
     return x <= bounds.at(0) && x >= bounds.at(2)
         && y <= bounds.at(1) && y >= bounds.at(3);
 }
@@ -60,7 +62,9 @@ static bool isPointInBounds(const std::array<int, 4> &bounds, const int x, const
  * @param tile
  * @return
  */
-static AdjacentTiles getAdjacentTiles(DungeonGrid &grid, std::vector<std::unique_ptr<Tile>> &pTiles, const Tile* tile) {
+static AdjacentTiles getAdjacentTiles(AAF::Grid2D<std::unique_ptr<GridTile>> &grid,
+                                      std::vector<std::unique_ptr<Tile>> &pTiles,
+                                      const Tile* tile) {
 
     constexpr std::array<int, 4> horizontal = {0, 1, 0, -1};
     constexpr std::array<int, 4> vertical = {1, 0, -1, 0};
@@ -99,7 +103,7 @@ static AdjacentTiles getAdjacentTiles(DungeonGrid &grid, std::vector<std::unique
  * @param roomA
  * @param roomB
  */
-static Path generatePath(DungeonGrid &grid, Room* roomA, Room* roomB) {
+static Path generatePath(AAF::Grid2D<std::unique_ptr<GridTile>> &grid, Room* roomA, Room* roomB) {
 
     // get start
     //roomA->mRect.midpoint();
@@ -168,7 +172,6 @@ static Path generatePath(DungeonGrid &grid, Room* roomA, Room* roomB) {
         currentTile = *std::min_element(adjacent.mTiles.begin(), adjacent.mTiles.end(), lowestScore);
         pathTiles.push_back(currentTile);
     }
-
 
     // when position found, trace back the path by getting the next lowest number.
     // prefer to go in a straight line compared to zig zag if the next lowest is straight, not angled

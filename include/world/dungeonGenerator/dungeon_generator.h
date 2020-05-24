@@ -13,13 +13,14 @@
 #include "maths/maths_types.h"
 #include <util/logger.h>
 #include <framework/systems/debug_system.h>
+#include <grid.h>
 
 #include "maths/delaunay.h"
 #include "maths/minimum_spanning_tree.h"
 #include "room.h"
 #include "path.h"
-#include "dungeon_grid.h"
 #include "path_generator.h"
+#include "grid_tile.h"
 
 struct Dungeon {
     std::vector<Room> mMainRooms;
@@ -126,26 +127,29 @@ class DungeonGenerator {
     }
 
     /** create a dungeon grid that will fit all the rooms */
-    static DungeonGrid createDungeonGridFromRooms(std::vector<std::unique_ptr<Room>>& rooms) {
+    static AAF::Grid2D<std::unique_ptr<GridTile>> createDungeonGridFromRooms(std::vector<std::unique_ptr<Room>>& rooms) {
         const auto highestRoom = [] (const auto & a, const auto & b) { return a->mRect.mPosition.y < b->mRect.mPosition.y; };
         const auto leftMostRoom = [] (const auto & a, const auto & b) { return a->mRect.mPosition.x > b->mRect.mPosition.x; };
         const auto rightMostRoom = [] (const auto & a, const auto & b) { return a->mRect.mPosition.x < b->mRect.mPosition.x; };
         const auto lowestRoom = [] (const auto & a, const auto & b) { return a->mRect.mPosition.y > b->mRect.mPosition.y; };
 
-        auto top = std::max_element(rooms.begin(), rooms.end(), highestRoom);
-        auto left = std::max_element(rooms.begin(), rooms.end(), leftMostRoom);
-        auto right = std::max_element(rooms.begin(), rooms.end(), rightMostRoom);
-        auto bottom = std::max_element(rooms.begin(), rooms.end(), lowestRoom);
+        auto top = std::max_element(rooms.begin(), rooms.end(), highestRoom)->get()->mRect.topLeft().y;
+        auto left = std::max_element(rooms.begin(), rooms.end(), leftMostRoom)->get()->mRect.topLeft().x;
+        auto right = std::max_element(rooms.begin(), rooms.end(), rightMostRoom)->get()->mRect.topRight().x;
+        auto bottom = std::max_element(rooms.begin(), rooms.end(), lowestRoom)->get()->mRect.bottomLeft().y;
 
-        auto grid = DungeonGrid(top->get()->mRect.topLeft().y + sGridSpacing,
-                                right->get()->mRect.topRight().x + sGridSpacing,
-                                left->get()->mRect.topLeft().x - sGridSpacing,
-                                bottom->get()->mRect.bottomLeft().y - sGridSpacing);
-        return std::move(grid);
+        auto width = right - left + (sGridSpacing * 2);
+        auto height = right - left + (sGridSpacing * 2);
+        auto originX = left - sGridSpacing;
+        auto originY = bottom - sGridSpacing;
+
+        auto newGrid = AAF::Grid2D<std::unique_ptr<GridTile>>(width, height, originX, originY);
+        return std::move(newGrid);
     }
 
     /** Insert a vector of rooms into the dungeon grid. */
-    static void insertRoomsIntoGrid(DungeonGrid &grid, std::vector<std::unique_ptr<Room>>& rooms) {
+    static void insertRoomsIntoGrid(AAF::Grid2D<std::unique_ptr<GridTile>> &grid,
+                                    std::vector<std::unique_ptr<Room>> &rooms) {
         for(const auto & room : rooms) {
             insertRoomIntoGrid(grid, room.get());
         }
@@ -153,41 +157,36 @@ class DungeonGenerator {
 
     /** inserts a single room into the supplied grid */
     // todo: heavy duplication, can reduce?
-    static void insertRoomIntoGrid(DungeonGrid &grid, Room* room) {
+    static void insertRoomIntoGrid(AAF::Grid2D<std::unique_ptr<GridTile>> &grid, Room* room) {
         /* insert bottom row of walls */
         for(int i = 0; i < room->mRect.mSize.x; ++i) {
-            auto gridPosition = grid[room->mRect.mPosition.y][room->mRect.mPosition.x + i];
-            gridPosition->mType = GridTileType::WALL;
-            gridPosition->mRoomPtr = room;
+            grid.at(room->mRect.mPosition.x + i, room->mRect.mPosition.y)
+                = std::make_unique<GridTile>(GridTileType::WALL, room);
         }
 
         /* insert top row of walls */
         for(int i = 0; i < room->mRect.mSize.x; ++i) {
-            auto gridPosition = grid[room->mRect.topLeft().y][room->mRect.mPosition.x + i];
-            gridPosition->mType = GridTileType::WALL;
-            gridPosition->mRoomPtr = room;
+            grid.at(room->mRect.mPosition.x + i, room->mRect.topLeft().y)
+                    = std::make_unique<GridTile>(GridTileType::WALL, room);
         }
 
         /* insert left row of walls */
         for(int i = 0; i < room->mRect.mSize.y; ++i) {
-            auto gridPosition = grid[room->mRect.mPosition.y + i][room->mRect.mPosition.x];
-            gridPosition->mType = GridTileType::WALL;
-            gridPosition->mRoomPtr = room;
+            grid.at(room->mRect.mPosition.x, room->mRect.mPosition.y + i)
+                = std::make_unique<GridTile>(GridTileType::WALL, room);
         }
 
         /* insert right row of walls */
         for(int i = 0; i < room->mRect.mSize.y; ++i) {
-            auto gridPosition = grid[room->mRect.mSize.y + i][room->mRect.bottomRight().x];
-            gridPosition->mType = GridTileType::WALL;
-            gridPosition->mRoomPtr = room;
+            grid.at(room->mRect.bottomRight().x, room->mRect.mSize.y + i)
+                = std::make_unique<GridTile>(GridTileType::WALL, room);
         }
 
         /* insert floor tiles */
         for(int i = 1; i < room->mRect.mSize.y-1; ++i) {
             for(int i = 1; i < room->mRect.mSize.x - 1; ++i) {
-                auto gridPosition = grid[room->mRect.mSize.y + i][room->mRect.mPosition.x + i];
-                gridPosition->mType = GridTileType::ROOM_FLOOR;
-                gridPosition->mRoomPtr = room;
+                grid.at(room->mRect.mPosition.x + i, room->mRect.mSize.y + i)
+                        = std::make_unique<GridTile>(GridTileType::ROOM_FLOOR, room);
             }
         }
     }
@@ -252,8 +251,6 @@ public:
 
             /* Get position of the door for each room */
 
-            generatePath(grid, roomA->get(), roomB->get());
-
             /* for each connection, pass the map grid and connection a pathing class */
 
             /* check if any rooms intersect the path */
@@ -264,7 +261,6 @@ public:
 
             auto path = generatePath(grid, roomA->get(), roomB->get());
 
-
             for(int i = 1; i < path.mNodes.size(); ++i) {
                 auto nodeA = path.mNodes.at(i - 1);
                 auto nodeB = path.mNodes.at(i);
@@ -274,7 +270,6 @@ public:
                                  10.0f,
                                  {255, 255, 255} );
             }
-
         }
 
         /** todo: remove debug draw! */
