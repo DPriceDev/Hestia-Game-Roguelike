@@ -237,7 +237,9 @@ public:
 
         /* todo refactor out as a method */
         /* generate paths between rooms */
-        for(auto const & connection : minimumSpanTree.mConnections) {
+        for(int c = 0; c < 5; ++c) {
+
+            const auto & connection = minimumSpanTree.mConnections.at(c);
 
             /* get connected rooms */
             auto roomA = std::find_if(mRooms.begin(), mRooms.end(), [&] (const auto & room) {
@@ -250,7 +252,7 @@ public:
 
             /* Get position of the door for each room */
 
-            generatePath(grid, roomA->get()->mRect.mPosition, roomB->get()->mRect.mPosition);
+            generatePath(grid, roomA->get(), roomB->get());
 
             /* for each connection, pass the map grid and connection a pathing class */
 
@@ -259,6 +261,19 @@ public:
             /* insert minor rooms that intersect the path */
 
             /* update path and insert that into the map grid */
+
+            auto path = generatePath(grid, roomA->get(), roomB->get());
+
+
+            for(int i = 1; i < path.mNodes.size(); ++i) {
+                auto nodeA = path.mNodes.at(i - 1);
+                auto nodeB = path.mNodes.at(i);
+
+                mDebug->drawLine(HGE::Vector2f ( 400 + nodeA.x, 300 + nodeA.y ),
+                                 HGE::Vector2f ( 400 + nodeB.x, 300 + nodeB.y ),
+                                 10.0f,
+                                 {255, 255, 255} );
+            }
 
         }
 

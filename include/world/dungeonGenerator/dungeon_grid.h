@@ -5,6 +5,7 @@
 #ifndef HESTIA_ROGUELIKE_INCLUDE_WORLD_DUNGEONGENERATOR_DUNGEON_GRID_H
 #define HESTIA_ROGUELIKE_INCLUDE_WORLD_DUNGEONGENERATOR_DUNGEON_GRID_H
 
+#include <array>
 #include <vector>
 #include <optional>
 #include <algorithm>
@@ -34,12 +35,13 @@ class DungeonGrid {
     };
 
     std::vector<Row> mGrid;
+    std::array<int, 4> mBounds;
     int mOffsetX, mOffsetY;
 
 public:
-    /* todo: cant guarantee negative or positive bound numbers. add adjustments for this. */
+    /* todo: cant guarantee negative or positive bound numbers. add adjustments for this. Two vectors maybe? */
     DungeonGrid(const int gridTop, const int gridRight, const int gridLeft = 0, const int gridBottom = 0)
-            : mOffsetX(-gridLeft), mOffsetY(-gridBottom) {
+            : mOffsetX(-gridLeft), mOffsetY(-gridBottom), mBounds({ gridTop, gridRight, gridBottom, gridLeft }) {
 
         auto columnCount = gridRight - gridLeft;
         auto rowCount = gridTop - gridBottom;
@@ -51,6 +53,11 @@ public:
 
     Row& operator[](int index) {
         return mGrid[index + mOffsetY];
+    }
+
+    [[nodiscard]]
+    const auto & getBounds() const {
+        return mBounds;
     }
 };
 
