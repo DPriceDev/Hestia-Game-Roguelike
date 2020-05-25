@@ -12,9 +12,9 @@
 #include <algorithm>
 
 #include <maths/maths.h>
+#include <maths/maths_types.h>
 #include <util/logger.h>
 
-#include <grid.h>
 #include "grid_tile.h"
 
 class BreadthPathGenerator {
@@ -24,10 +24,12 @@ class BreadthPathGenerator {
         HGE::Vector2i { 0, -1 },
         HGE::Vector2i { -1, 0 } };
 
+    const static int sMaxScore = 99999999;
+
     struct Tile {
-        HGE::Vector2i mPosition;
-        int mScore{ 99999999 };
-        bool mVisited{ false };
+        HGE::Vector2i mPosition { 0,0 };
+        int mScore { sMaxScore };
+        bool mVisited { false };
 
         Tile() = default;
         Tile(const HGE::Vector2i &position, const int &score, bool visited)
@@ -38,10 +40,10 @@ class BreadthPathGenerator {
      *
      */
     template<class Type>
-    auto breadthSearch(const AAF::Grid2D<Type> &grid, const HGE::Vector2i &start, const HGE::Vector2i &finish) {
+    auto breadthSearch(const HGE::Grid<Type> &grid, const HGE::Vector2i &start, const HGE::Vector2i &finish) {
 
         auto startTile = Tile(start, 0, true);
-        auto tileGrid = AAF::Grid2D<Tile>(grid.gridParameters());
+        auto tileGrid = HGE::Grid<Tile>(grid.gridParameters());
         tileGrid.at(start.x, start.y) = startTile;
         auto tileQueue = std::queue<Tile>{ { startTile } };
         bool endReached{ false };
@@ -77,39 +79,38 @@ class BreadthPathGenerator {
     /**
      *
      */
-    auto traceBackPath(AAF::Grid2D<Tile> &tileGrid, const HGE::Vector2i &start, const HGE::Vector2i &finish) {
-
+    auto traceBackPath(HGE::Grid<Tile> &tileGrid, const HGE::Vector2i &start,
+                       const HGE::Vector2i &finish, const std::vector<int> &tileIds) {
         std::vector<HGE::Vector2i> pathNodes{ finish };
         HGE::Vector2i currentNode = finish;
 
         while(currentNode != start) {
-
-            /* get valid adjacent */
             auto adjacent = std::vector<Tile>();
-            for(const auto & offset : sOffsets) {
-                auto adjPosition = currentNode + offset;
-                if(tileGrid.isPointInGrid(adjPosition.x, adjPosition.y)) {
-                    adjacent.push_back(tileGrid.at(adjPosition.x, adjPosition.y));
-                }
-            }
 
-            /* check for lowest score */
-            const auto lowestScore = [] (const auto & a, const auto & b) {
+            const auto createAdjacent = [&tileGrid, &currentNode] (const auto & offset) {
+                const auto adjPosition = currentNode + offset;
+                return tileGrid.at(adjPosition.x, adjPosition.y);
+            };
+
+            const auto isInGrid = [&tileGrid, &currentNode] (const auto & offset) {
+                const auto adjPosition = currentNode + offset;
+                return tileGrid.isPointInGrid(adjPosition.x, adjPosition.y);
+            };
+
+            constexpr auto lowestScore = [] (const auto & a, const auto & b) {
                 return a.mScore < b.mScore;
             };
+
+            ATA::transform_if(sOffsets.begin(), sOffsets.end(),
+                              std::back_inserter(adjacent), createAdjacent, isInGrid);
+
             auto it = std::min_element(adjacent.begin(), adjacent.end(), lowestScore);
 
-            /* set it as current node and add to pathNodes */
             currentNode = it->mPosition;
             pathNodes.push_back(it->mPosition);
         }
 
-        auto path = Path();
-        std::transform(pathNodes.begin(), pathNodes.end(), std::back_inserter(path.mNodes), [] (const auto & node) {
-            return HGE::Vector2f(node.x, node.y);
-        });
-
-        return path;
+        return Path(pathNodes, tileIds);
     }
 
 public:
@@ -125,9 +126,10 @@ public:
      * @return
      */
     template<class Type>
-    Path generatePath(const AAF::Grid2D<Type> &grid, const HGE::Vector2i &start, const HGE::Vector2i &finish) {
+    Path generatePath(const HGE::Grid<Type> &grid, const HGE::Vector2i &start,
+                      const HGE::Vector2i &finish, const std::vector<int> &tileIds) {
         auto tileGrid = breadthSearch(grid, start, finish);
-        return traceBackPath(tileGrid, start, finish);
+        return traceBackPath(tileGrid, start, finish, tileIds);
     }
 };
 

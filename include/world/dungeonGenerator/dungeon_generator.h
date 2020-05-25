@@ -13,13 +13,12 @@
 #include "maths/maths_types.h"
 #include <util/logger.h>
 #include <framework/systems/debug_system.h>
-#include <grid.h>
 
 #include "maths/delaunay.h"
 #include "maths/minimum_spanning_tree.h"
 #include "room.h"
 #include "path.h"
-#include "path_generator.h"
+#include "breadth_path_generator.h"
 #include "grid_tile.h"
 
 struct Dungeon {
@@ -127,7 +126,8 @@ class DungeonGenerator {
     }
 
     /** create a dungeon grid that will fit all the rooms */
-    static AAF::Grid2D<std::unique_ptr<GridTile>> createDungeonGridFromRooms(std::vector<std::unique_ptr<Room>>& rooms) {
+    static HGE::Grid<std::unique_ptr<GridTile>> createDungeonGridFromRooms(std::vector<std::unique_ptr<Room>>&
+    rooms) {
         const auto highestRoom = [] (const auto & a, const auto & b) { return a->mRect.mPosition.y < b->mRect.mPosition.y; };
         const auto leftMostRoom = [] (const auto & a, const auto & b) { return a->mRect.mPosition.x > b->mRect.mPosition.x; };
         const auto rightMostRoom = [] (const auto & a, const auto & b) { return a->mRect.mPosition.x < b->mRect.mPosition.x; };
@@ -144,12 +144,12 @@ class DungeonGenerator {
         auto originY = bottom - sGridSpacing;
 
         /* todo: pointer issue? grid size? */
-        auto newGrid = AAF::Grid2D<std::unique_ptr<GridTile>>(width, height, originX, originY);
+        auto newGrid = HGE::Grid<std::unique_ptr<GridTile>>(width, height, originX, originY);
         return std::move(newGrid);
     }
 
     /** Insert a vector of rooms into the dungeon grid. */
-    static void insertRoomsIntoGrid(AAF::Grid2D<std::unique_ptr<GridTile>> &grid,
+    static void insertRoomsIntoGrid(HGE::Grid<std::unique_ptr<GridTile>> &grid,
                                     std::vector<std::unique_ptr<Room>> &rooms) {
         for(const auto & room : rooms) {
             insertRoomIntoGrid(grid, room.get());
@@ -158,7 +158,7 @@ class DungeonGenerator {
 
     /** inserts a single room into the supplied grid */
     // todo: heavy duplication, can reduce?
-    static void insertRoomIntoGrid(AAF::Grid2D<std::unique_ptr<GridTile>> &grid, Room* room) {
+    static void insertRoomIntoGrid(HGE::Grid<std::unique_ptr<GridTile>> &grid, Room* room) {
         /* insert bottom row of walls */
         for(int i = 0; i < room->mRect.mSize.x; ++i) {
             grid.at(room->mRect.mPosition.x + i, room->mRect.mPosition.y)
@@ -262,8 +262,8 @@ public:
 
             auto start = HGE::Vector2i(roomA->get()->mRect.mPosition.x, roomA->get()->mRect.mPosition.y);
             auto finish = HGE::Vector2i(roomB->get()->mRect.mPosition.x, roomB->get()->mRect.mPosition.y);
-
-            auto path = pathSearcher.generatePath(grid, start, finish);
+            auto roomIds = std::vector<int>{ roomA->get()->mId, roomB->get()->mId };
+            auto path = pathSearcher.generatePath(grid, start, finish, roomIds);
 
             for(int i = 1; i < path.mNodes.size(); ++i) {
                 auto nodeA = path.mNodes.at(i - 1);

@@ -22,8 +22,7 @@ file(GLOB all_SRCS
 
 set (INCLUDE_DIRS
         include
-        depends/hge/include
-        depends/hge/depends/athena/include)
+        depends/hge/include)
 
 include_directories(${INCLUDE_DIRS})
 add_executable(hestia-Roguelike.app ${all_SRCS})
