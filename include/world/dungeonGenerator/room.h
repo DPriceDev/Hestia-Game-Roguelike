@@ -9,11 +9,11 @@
 
 struct Room {
     int mId;
-    HGE::Rectf mRect{ };
-    HGE::Vector2f mMovement{ };
+    HGE::Recti mRect{ };
+    HGE::Vector2i mMovement{ };
 
     explicit Room(int id) : mId(id) { }
-    Room(int id, HGE::Rectf rect) : mId(id), mRect(rect) { }
+    Room(int id, HGE::Recti rect) : mId(id), mRect(rect) { }
     ~Room() = default;
 
     bool operator!=(const Room & other) const {

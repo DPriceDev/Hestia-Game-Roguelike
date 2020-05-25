@@ -50,11 +50,11 @@ class DungeonGenerator {
     std::uniform_real_distribution<float> mAngleDistribution { 0, S_TWO_PI };
 
     /** Get a random point in a circle */
-    HGE::Vector2f randomPointInCircle() {
+    HGE::Vector2i randomPointInCircle() {
         float radius = std::sqrt(mRadiusDistribution(mGenerator));
         float angle = mAngleDistribution(mGenerator);
-        return { HGE::roundValueToMultipleOf(radius * cos(angle), 1.0f),
-                 HGE::roundValueToMultipleOf(radius * sin(angle), 1.0f)};
+        return { static_cast<int>(radius * cos(angle)),
+                 static_cast<int>(radius * sin(angle))};
     }
 
     /** Separate a set of rooms so that none overlap */
@@ -86,23 +86,29 @@ class DungeonGenerator {
 
                 const auto matchSeparate = [&] (auto & a, auto & b) {
                     overlapsExist = true;
-                    return a + (room->mRect.midpoint() - b->mRect.midpoint()) / sSeperationFactor;
+                    auto midpoint = (room->mRect.midpoint() - b->mRect.midpoint()) / sSeperationFactor;
+                    midpoint.x = ceil(midpoint.x);
+                    midpoint.y = ceil(midpoint.y);
+                    return a + midpoint;
                 };
 
                 const auto matchSame = [&] (auto & a, auto & b) {
                     overlapsExist = true;
-                    return a + room->mRect.midpoint().normalised();
+                    auto midpointNorm = room->mRect.midpoint().normalised();
+                    midpointNorm.x = ceil(midpointNorm.x);
+                    midpointNorm.y = ceil(midpointNorm.y);
+                    return a + midpointNorm;
                 };
 
-                room->mMovement += std::accumulate(overlapping.begin(), overlapping.end(), HGE::Vector2f(),matchSeparate);
-                room->mMovement += std::accumulate(overlappingSame.begin(), overlappingSame.end(), HGE::Vector2f(),matchSame);
+                room->mMovement += std::accumulate(overlapping.begin(), overlapping.end(), HGE::Vector2i(),
+                        matchSeparate);
+                room->mMovement += std::accumulate(overlappingSame.begin(), overlappingSame.end(), HGE::Vector2i(),
+                        matchSame);
             });
 
             std::for_each(pRooms.begin(), pRooms.end(), [] (auto & room) {
-                room->mMovement.x = HGE::roundValueToMultipleOf(room->mMovement.x, 1.0f);
-                room->mMovement.y = HGE::roundValueToMultipleOf(room->mMovement.y, 1.0f);
                 room->mRect.mPosition += room->mMovement;
-                room->mMovement = HGE::Vector2f();
+                room->mMovement = HGE::Vector2i();
             });
         }
 
@@ -114,13 +120,12 @@ class DungeonGenerator {
         std::vector<std::unique_ptr<Room>> rooms{ };
 
         for(int i = 0; i < numberOfRooms; ++i) {
-            auto width = HGE::roundValueToMultipleOf(
-                    HGE::randomNumberBetween<float>(sMinimumRoomSize, sMaximumRoomSize), 1.0f);
+            auto width = HGE::randomNumberBetween<int>(sMinimumRoomSize, sMaximumRoomSize);
 
-            auto height = HGE::roundValueToMultipleOf(
-                    HGE::randomNumberBetween<float>(sMinimumRoomSize, sMaximumRoomSize), 1.0f);
+            auto height = HGE::randomNumberBetween<int>(sMinimumRoomSize, sMaximumRoomSize);
 
-            rooms.emplace_back(std::make_unique<Room>(Room(i, HGE::Rectf(randomPointInCircle(), { width, height }))));
+            rooms.emplace_back(std::make_unique<Room>(
+                    Room(i,HGE::Recti(randomPointInCircle(), { width, height }))));
         }
         return std::move(rooms);
     }

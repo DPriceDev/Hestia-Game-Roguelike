@@ -39,7 +39,9 @@ class MapGrid : public HGE::GameObject {
 
         for(auto const & room : dungeonGen.getRooms()) {
             auto roomTile = createObject<FloorTile>();
-            roomTile->mPosition->mTransform.mLocalPosition = HGE::Vector2f(400, 300) + (room->mRect.mPosition);
+            roomTile->mPosition->mTransform.mLocalPosition.x = (400 + room->mRect.mPosition.x) * 1.0f;
+            roomTile->mPosition->mTransform.mLocalPosition.y = (300 + room->mRect.mPosition.y) * 1.0f;
+
             roomTile->mSprite->mTransform.mScale.x = room->mRect.mSize.x * 0.0f;
             roomTile->mSprite->mTransform.mScale.y = room->mRect.mSize.y * 0.0f;
         }
