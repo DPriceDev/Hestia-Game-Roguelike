@@ -5,18 +5,12 @@
 #ifndef HESTIA_ROGUELIKE_MAP_GRID_H
 #define HESTIA_ROGUELIKE_MAP_GRID_H
 
-#include <framework/ecs/game_object.h>
-#include <framework/systems/tick_system.h>
-#include <engine.h>
 #include <array>
 
-#include "player/RoguePlayer.h"
-#include "Wall.h"
-#include "floor_tile.h"
-#include "world/dungeonGenerator/dungeon_generator.h"
-
-#include <util/logger.h>
+#include <framework/ecs/game_object.h>
 #include <framework/systems/debug_system.h>
+
+#include "player/rogue_player.h"
 
 /**
  *
@@ -30,28 +24,10 @@ class MapGrid : public HGE::GameObject {
 
     std::array<std::array<HGE::GameObject*, MaxGridSize>, MaxGridSize> mGrid { };
 
-    void onCreate() override {
-        mDebugComponent = createComponent<HGE::DebugComponent>(getId());
-
-        auto dungeonGen = DungeonGenerator(mDebugComponent);
-
-        dungeonGen.generate();
-
-        for(auto const & room : dungeonGen.getRooms()) {
-            auto roomTile = createObject<FloorTile>();
-            roomTile->mPosition->mTransform.mLocalPosition.x = (400 + room->mRect.mPosition.x) * 1.0f;
-            roomTile->mPosition->mTransform.mLocalPosition.y = (300 + room->mRect.mPosition.y) * 1.0f;
-
-            roomTile->mSprite->mTransform.mScale.x = room->mRect.mSize.x * 0.0f;
-            roomTile->mSprite->mTransform.mScale.y = room->mRect.mSize.y * 0.0f;
-        }
-    }
+    void onCreate() override;
 
 public:
-
-    void addPlayerToStartRoom(RoguePlayer* roguePlayer) {
-
-    }
+    void addPlayerToStartRoom(RoguePlayer* roguePlayer);
 };
 
 #endif //HESTIA_ROGUELIKE_MAP_GRID_H

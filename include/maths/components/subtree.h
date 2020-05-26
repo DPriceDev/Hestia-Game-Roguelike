@@ -14,15 +14,17 @@ struct SubTree {
     SubTree() = default;
     explicit SubTree(int initialPoint) : mConnectedPoints({ initialPoint }) { }
 
-    inline SubTree& operator+=(const SubTree& other) {
+    SubTree& operator+=(const SubTree& other) {
         this->mConnectedPoints.insert(this->mConnectedPoints.end(),
-                                      other.mConnectedPoints.begin(), other.mConnectedPoints.end());
+                                      other.mConnectedPoints.begin(),
+                                      other.mConnectedPoints.end());
         this->mConnections.insert(this->mConnections.end(),
-                                  other.mConnections.begin(), other.mConnections.end());
+                                  other.mConnections.begin(),
+                                  other.mConnections.end());
         return *this;
     }
 
-    inline SubTree& operator=(const SubTree& other) = default;
+    SubTree& operator=(const SubTree& other) = default;
 };
 
 #endif //HESTIA_ROGUELIKE_INCLUDE_MATHS_COMPONENTS_SUBTREE_H

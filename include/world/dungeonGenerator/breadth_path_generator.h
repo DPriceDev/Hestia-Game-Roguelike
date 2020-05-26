@@ -17,6 +17,7 @@
 
 #include "grid_tile.h"
 
+template<class Type, class ScoreOperator>
 class BreadthPathGenerator {
     const std::array<HGE::Vector2i, 4> sOffsets{
         HGE::Vector2i { 0, 1 },
@@ -25,6 +26,9 @@ class BreadthPathGenerator {
         HGE::Vector2i { -1, 0 } };
 
     const static int sMaxScore = 99999999;
+
+    HGE::Grid<Type>& mGrid;
+    ScoreOperator mScoreOperator;
 
     struct Tile {
         HGE::Vector2i mPosition { 0,0 };
@@ -39,28 +43,28 @@ class BreadthPathGenerator {
     /**
      *
      */
-    template<class Type>
-    auto breadthSearch(const HGE::Grid<Type> &grid, const HGE::Vector2i &start, const HGE::Vector2i &finish) {
+    auto breadthSearch(const HGE::Vector2i &start, const HGE::Vector2i &finish) {
 
         auto startTile = Tile(start, 0, true);
-        auto tileGrid = HGE::Grid<Tile>(grid.gridParameters());
+        auto tileGrid = HGE::Grid<Tile>(mGrid.gridParameters());
         tileGrid.at(start.x, start.y) = startTile;
         auto tileQueue = std::queue<Tile>{ { startTile } };
         bool endReached{ false };
 
         while(!tileQueue.empty() && !endReached) {
-
-            auto newScore = tileQueue.front().mScore + 1;
             for(auto & offset: sOffsets) {
                 auto adjPosition = tileQueue.front().mPosition + offset;
-                if(grid.isPointInGrid(adjPosition.x, adjPosition.y)) {
 
+                if(mGrid.isPointInGrid(adjPosition.x, adjPosition.y)) {
                     auto adjTile = tileGrid.at(adjPosition.x, adjPosition.y);
+                    auto newScore = mScoreOperator(mGrid.at(adjPosition.x, adjPosition.y), tileQueue.front().mScore);
 
                     if(!adjTile.mVisited) {
                         auto newTile = Tile(adjPosition, newScore, true);
                         tileGrid.at(adjPosition.x, adjPosition.y) = newTile;
-                        tileQueue.push(newTile);
+                        if(newScore != sMaxScore) {
+                            tileQueue.push(newTile);
+                        }
                     } else if (adjTile.mScore > newScore) {
                         adjTile.mScore = newScore;
                     }
@@ -105,16 +109,20 @@ class BreadthPathGenerator {
                               std::back_inserter(adjacent), createAdjacent, isInGrid);
 
             auto it = std::min_element(adjacent.begin(), adjacent.end(), lowestScore);
-
             currentNode = it->mPosition;
             pathNodes.push_back(it->mPosition);
-        }
 
+            if(it->mScore >= 99999999) {
+                LOG_DEBUG("Breadth Path Generator", "minimum is 99999999!")
+                break;
+            }
+        }
         return Path(pathNodes, tileIds);
     }
 
 public:
-    BreadthPathGenerator() = default;
+    BreadthPathGenerator(HGE::Grid<Type> &grid, ScoreOperator scoreOperator)
+        : mGrid(grid), mScoreOperator(scoreOperator) { }
     ~BreadthPathGenerator() = default;
 
     /**
@@ -125,10 +133,8 @@ public:
      * @param finish
      * @return
      */
-    template<class Type>
-    Path generatePath(const HGE::Grid<Type> &grid, const HGE::Vector2i &start,
-                      const HGE::Vector2i &finish, const std::vector<int> &tileIds) {
-        auto tileGrid = breadthSearch(grid, start, finish);
+    Path generatePath(const HGE::Vector2i &start, const HGE::Vector2i &finish, const std::vector<int> &tileIds) {
+        auto tileGrid = breadthSearch(start, finish);
         return traceBackPath(tileGrid, start, finish, tileIds);
     }
 };

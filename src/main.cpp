@@ -5,7 +5,7 @@
 #include <engine.h>
 #include <graphics/opengl_module.h>
 
-#include "RogueGameEnvironment.h"
+#include "rogue_game_environment.h"
 
 int main() {
     auto* engine = HGE::Engine::instance();

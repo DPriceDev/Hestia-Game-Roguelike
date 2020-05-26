@@ -9,9 +9,6 @@
 
 #include <framework/ecs/game_object.h>
 #include <framework/systems/sprite_system.h>
-#include <engine.h>
-
-#include <maths/maths.h>
 
 class FloorTile : public HGE::GameObject {
 
@@ -30,24 +27,9 @@ public:
     HGE::PositionComponent* mPosition;
 
     FloorTile() = default;
-    ~FloorTile() override {
-        destroyComponent(mSprite);
-        destroyComponent(mPosition);
-    }
+    ~FloorTile() override;
 
-    void onCreate() override {
-        mSprite = createComponent<HGE::SpriteComponent>(getId());
-        mPosition = createComponent<HGE::PositionComponent>(getId());
-
-        mSprite->mTransform.mScale.x = 32;
-        mSprite->mTransform.mScale.y = 32;
-
-        mSprite->mShader = HGE::Engine::graphicsModule()->getShader("./assets/shaders/basicSpriteVertexShader.vs",
-                                                                    "./assets/shaders/fragmentShader.fs");
-
-        mSprite->mMaterial = HGE::Engine::graphicsModule()->getMaterial(
-                tileFiles[HGE::randomNumberBetween<int>(0, 9)].c_str());
-    }
+    void onCreate() override;
 };
 
 #endif //HESTIA_ROGUELIKE_INCLUDE_FLOOR_TILE_H
