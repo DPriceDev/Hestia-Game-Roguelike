@@ -13,10 +13,12 @@ struct Room {
     HGE::Vector2i mMovement{ };
 
     explicit Room(int id) : mId(id) { }
+
     Room(int id, HGE::Recti rect) : mId(id), mRect(rect) { }
+
     ~Room() = default;
 
-    bool operator!=(const Room & other) const {
+    bool operator!=(const Room &other) const {
         return this->mId != other.mId;
     }
 };

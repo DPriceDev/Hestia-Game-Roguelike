@@ -14,7 +14,7 @@ struct Path {
     std::vector<HGE::Vector2i> mNodes;
 
     Path(std::vector<HGE::Vector2i> nodes, std::vector<int> rooms)
-        : mNodes(std::move(nodes)), mConnectedRooms(std::move(rooms)) { }
+            : mNodes(std::move(nodes)), mConnectedRooms(std::move(rooms)) { }
 };
 
 #endif //HESTIA_ROGUELIKE_INCLUDE_WORLD_DUNGEONGENERATOR_PATH_H

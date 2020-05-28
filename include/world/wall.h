@@ -10,16 +10,17 @@
 
 class Wall : public HGE::GameObject {
 
-    const std::string backWallTiles[5] = {"./assets/textures/wall_1.png",
-                                       "./assets/textures/wall_2.png",
-                                       "./assets/textures/wall_crack.png",
-                                       "./assets/textures/wall_side_right.png",
-                                       "./assets/textures/wall_side_left.png"};
+    const std::string backWallTiles[5] = { "./assets/textures/wall_1.png",
+                                           "./assets/textures/wall_2.png",
+                                           "./assets/textures/wall_crack.png",
+                                           "./assets/textures/wall_side_right.png",
+                                           "./assets/textures/wall_side_left.png" };
 public:
-    HGE::SpriteComponent* mSpriteComponent;
-    HGE::PositionComponent* mPositionComponent;
+    HGE::SpriteComponent *mSpriteComponent;
+    HGE::PositionComponent *mPositionComponent;
 
     Wall() = default;
+
     ~Wall() override;
 
     void onCreate() override;

@@ -26,10 +26,10 @@
  * @param points            - vector of 2d points and id's
  * @return Triangulation    - triangulation containing vertices, edges and triangles
  */
-Triangulation Delaunay::triangulationFromPoints(const std::vector<std::pair<int,HGE::Vector2f>>&points) {
+Triangulation Delaunay::triangulationFromPoints(const std::vector<std::pair<int, HGE::Vector2f>> &points) {
     Triangulation triangulation{ };
 
-    auto const convertToVertices = [] (const std::pair<int, HGE::Vector2f> & point) {
+    auto const convertToVertices = [](const std::pair<int, HGE::Vector2f> &point) {
         return Vertex(point.first, point.second);
     };
 
@@ -39,13 +39,13 @@ Triangulation Delaunay::triangulationFromPoints(const std::vector<std::pair<int,
     Vertex radius{ getFurthestPointOfVertices(vertices) };
     createSuperTriangleFromFurthestPoint(triangulation, radius);
 
-    std::for_each(vertices.begin(), vertices.end(), [&triangulation] (const Vertex & vert) {
-        auto badTriangles = std::vector<Triangle*>();
+    std::for_each(vertices.begin(), vertices.end(), [&triangulation](const Vertex &vert) {
+        auto badTriangles = std::vector<Triangle *>();
         auto polygon = Polygon();
-        auto badEdges = std::vector<Edge*>();
+        auto badEdges = std::vector<Edge *>();
 
-        const auto isInTriangleCircumcenter = [&vert, &badTriangles] (const std::unique_ptr<Triangle> & triangle) {
-            if(HGE::isPointInACircle(vert.mPosition, triangle->mCircumcenter, triangle->mCircumradius)) {
+        const auto isInTriangleCircumcenter = [&vert, &badTriangles](const std::unique_ptr<Triangle> &triangle) {
+            if (HGE::isPointInACircle(vert.mPosition, triangle->mCircumcenter, triangle->mCircumradius)) {
                 badTriangles.push_back(triangle.get());
             }
         };
@@ -64,13 +64,13 @@ Triangulation Delaunay::triangulationFromPoints(const std::vector<std::pair<int,
 
 
 /** retrieve and edge from a pair of vertices. */
-std::optional<Edge*> Delaunay::getEdgeFromVertices(const std::vector<std::unique_ptr<Edge>> &edges,
-                                                const Vertex* a,
-                                                const Vertex* b) {
-    auto it = std::find_if(edges.begin(), edges.end(), [a, b] (auto & edge) {
+std::optional<Edge *> Delaunay::getEdgeFromVertices(const std::vector<std::unique_ptr<Edge>> &edges,
+                                                    const Vertex *a,
+                                                    const Vertex *b) {
+    auto it = std::find_if(edges.begin(), edges.end(), [a, b](auto &edge) {
         return (edge->a() == a && edge->b() == b) || (edge->b() == a && edge->a() == b);
     });
-    if(it != edges.end()) {
+    if (it != edges.end()) {
         return it->get();
     } else {
         return std::nullopt;
@@ -79,16 +79,16 @@ std::optional<Edge*> Delaunay::getEdgeFromVertices(const std::vector<std::unique
 
 /** get the furthest point from the origin, in a set of vertices */
 Vertex Delaunay::getFurthestPointOfVertices(const std::vector<Vertex> &vertices) {
-    return *std::max_element(vertices.begin(), vertices.end(), [] (auto & a, auto & b) {
+    return *std::max_element(vertices.begin(), vertices.end(), [](auto &a, auto &b) {
         return a.mMagnitude < b.mMagnitude;
     });
 }
 
 /** create a super triangle, bigger than the furthest point. */
-void Delaunay::createSuperTriangleFromFurthestPoint(Triangulation &triangulation, const Vertex & furthest) {
+void Delaunay::createSuperTriangleFromFurthestPoint(Triangulation &triangulation, const Vertex &furthest) {
     constexpr static float sSuperTriangleOffset = 30.0;
     const static double adjacent = sqrt(3);
-    const static double height = adjacent/2;
+    const static double height = adjacent / 2;
     auto radius = furthest.mMagnitude + sSuperTriangleOffset;
 
     auto vertA = triangulation.mVertices.emplace_back(
@@ -96,7 +96,7 @@ void Delaunay::createSuperTriangleFromFurthestPoint(Triangulation &triangulation
     auto vertB = triangulation.mVertices.emplace_back(
             std::make_unique<Vertex>(-2, radius * adjacent, -radius)).get();
     auto vertC = triangulation.mVertices.emplace_back(
-            std::make_unique<Vertex>(-3, 0.0f , ((radius * 2) + (radius * adjacent)) * 0.5)).get();
+            std::make_unique<Vertex>(-3, 0.0f, ((radius * 2) + (radius * adjacent)) * 0.5)).get();
 
     auto edgeAB = triangulation.mEdges.emplace_back(
             std::make_unique<Edge>(vertA, vertB)).get();
@@ -117,16 +117,16 @@ void Delaunay::removeSuperTriangle(Triangulation &triangulation) {
 }
 
 /** adds non shared edges to a polygon, and shared edges of triangles in an edge array. */
-std::pair<std::vector<Edge*>, Polygon> Delaunay::getSharedAndNonSharedEdgesOfTriangles(
-        const std::vector<Triangle*>&triangles) {
+std::pair<std::vector<Edge *>, Polygon> Delaunay::getSharedAndNonSharedEdgesOfTriangles(
+        const std::vector<Triangle *> &triangles) {
 
-    std::map<Edge*, int> edgeMap{ };
-    std::vector<Edge*> edges{ };
+    std::map<Edge *, int> edgeMap{ };
+    std::vector<Edge *> edges{ };
     Polygon polygon{ };
 
-    const auto mapNumberOfEdges = [&edgeMap] (const Triangle* tri) {
-        std::for_each(tri->mEdges.begin(), tri->mEdges.end(), [&edgeMap] (Edge* edge) {
-            if(edgeMap.find(edge) != edgeMap.end()) {
+    const auto mapNumberOfEdges = [&edgeMap](const Triangle *tri) {
+        std::for_each(tri->mEdges.begin(), tri->mEdges.end(), [&edgeMap](Edge *edge) {
+            if (edgeMap.find(edge) != edgeMap.end()) {
                 edgeMap.at(edge) += 1;
             } else {
                 edgeMap.insert(std::make_pair(edge, 1));
@@ -134,8 +134,8 @@ std::pair<std::vector<Edge*>, Polygon> Delaunay::getSharedAndNonSharedEdgesOfTri
         });
     };
 
-    const auto separateEdgesIfShared = [&edges, &polygon] (const std::pair<Edge*, int> pair) {
-        if(pair.second == 1) {
+    const auto separateEdgesIfShared = [&edges, &polygon](const std::pair<Edge *, int> pair) {
+        if (pair.second == 1) {
             polygon.edges.push_back(pair.first);
         } else {
             edges.push_back(pair.first);
@@ -149,26 +149,26 @@ std::pair<std::vector<Edge*>, Polygon> Delaunay::getSharedAndNonSharedEdgesOfTri
 
 /** Constructs triangles from a point and a polygon. */
 void Delaunay::createTrianglesFromNewPoint(Triangulation &triangulation,
-                                        const Vertex &vert,
-                                        const Polygon &polygon) {
+                                           const Vertex &vert,
+                                           const Polygon &polygon) {
 
     auto newVert = triangulation.mVertices.emplace_back(
             std::make_unique<Vertex>(vert)).get();
 
-    for(auto & edge : polygon.edges) {
-        Edge* edgeNA;
-        Edge* edgeBN;
+    for (auto &edge : polygon.edges) {
+        Edge *edgeNA;
+        Edge *edgeBN;
         auto existingEdgeNA = getEdgeFromVertices(triangulation.mEdges, newVert, edge->a());
         auto existingEdgeBN = getEdgeFromVertices(triangulation.mEdges, edge->b(), newVert);
 
-        if(existingEdgeNA.has_value()) {
+        if (existingEdgeNA.has_value()) {
             edgeNA = existingEdgeNA.value();
         } else {
             edgeNA = triangulation.mEdges.emplace_back(
                     std::make_unique<Edge>(newVert, edge->a())).get();
         }
 
-        if(existingEdgeBN.has_value()) {
+        if (existingEdgeBN.has_value()) {
             edgeBN = existingEdgeBN.value();
         } else {
             edgeBN = triangulation.mEdges.emplace_back(

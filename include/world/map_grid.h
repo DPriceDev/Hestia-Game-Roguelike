@@ -17,17 +17,17 @@
  */
 class MapGrid : public HGE::GameObject {
 
-    HGE::DebugComponent* mDebugComponent;
+    HGE::DebugComponent *mDebugComponent;
 
     static const int MaxGridSize = 10;
     constexpr static float gridStepSize = 2.0f;
 
-    std::array<std::array<HGE::GameObject*, MaxGridSize>, MaxGridSize> mGrid { };
+    std::array<std::array<HGE::GameObject *, MaxGridSize>, MaxGridSize> mGrid{ };
 
     void onCreate() override;
 
 public:
-    void addPlayerToStartRoom(RoguePlayer* roguePlayer);
+    void addPlayerToStartRoom(RoguePlayer *roguePlayer);
 };
 
 #endif //HESTIA_ROGUELIKE_MAP_GRID_H

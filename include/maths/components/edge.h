@@ -10,13 +10,14 @@
 #include "maths/components/vertex.h"
 
 struct Edge {
-    std::array<Vertex*, 2> mVertices;
+    std::array<Vertex *, 2> mVertices;
     HGE::Pointf mLength;
 
-    Edge(Vertex* a, Vertex* b) : mVertices({a, b}), mLength(length()) { }
+    Edge(Vertex *a, Vertex *b) : mVertices({ a, b }), mLength(length()) { }
 
-    [[nodiscard]] Vertex* a() const noexcept { return mVertices[0]; }
-    [[nodiscard]] Vertex* b() const noexcept { return mVertices[1]; }
+    [[nodiscard]] Vertex *a() const noexcept { return mVertices[0]; }
+
+    [[nodiscard]] Vertex *b() const noexcept { return mVertices[1]; }
 
 private:
     [[nodiscard]]

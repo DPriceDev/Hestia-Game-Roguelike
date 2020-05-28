@@ -12,9 +12,10 @@ struct SubTree {
     std::vector<Connection> mConnections;
 
     SubTree() = default;
+
     explicit SubTree(int initialPoint) : mConnectedPoints({ initialPoint }) { }
 
-    SubTree& operator+=(const SubTree& other) {
+    SubTree &operator+=(const SubTree &other) {
         this->mConnectedPoints.insert(this->mConnectedPoints.end(),
                                       other.mConnectedPoints.begin(),
                                       other.mConnectedPoints.end());
@@ -24,7 +25,7 @@ struct SubTree {
         return *this;
     }
 
-    SubTree& operator=(const SubTree& other) = default;
+    SubTree &operator=(const SubTree &other) = default;
 };
 
 #endif //HESTIA_ROGUELIKE_INCLUDE_MATHS_COMPONENTS_SUBTREE_H

@@ -10,6 +10,6 @@ void RogueGameEnvironment::beginGame() {
     createObject<MapGrid>();
 }
 
-void RogueGameEnvironment::gameLoop(const double & deltaTime) { }
+void RogueGameEnvironment::gameLoop(const double &deltaTime) { }
 
 void RogueGameEnvironment::endGame() { }

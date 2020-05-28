@@ -21,15 +21,15 @@ HGE::Vector2f Triangle::circumcenter() const {
     auto F = C * (a()->x() + c()->x()) + D * (a()->y() + c()->y());
     auto G = 2 * (A * (c()->y() - b()->y()) - B * (c()->x() - b()->x()));
 
-    if(abs(G) < 0.000001) {
-        auto minx = std::min({a()->x(), b()->x(), c()->x()});
-        auto miny = std::min({a()->y(), b()->y(), c()->y()});
-        auto dx = (std::max({a()->x(), b()->x(), c()->x()}) - minx) * 0.5;
-        auto dy = (std::max({a()->y(), b()->y(), c()->y()}) - miny) * 0.5;
+    if (abs(G) < 0.000001) {
+        auto minx = std::min({ a()->x(), b()->x(), c()->x() });
+        auto miny = std::min({ a()->y(), b()->y(), c()->y() });
+        auto dx = (std::max({ a()->x(), b()->x(), c()->x() }) - minx) * 0.5;
+        auto dy = (std::max({ a()->y(), b()->y(), c()->y() }) - miny) * 0.5;
 
         return HGE::Vector2f(minx + dx, miny + dy);
     } else {
-        return HGE::Vector2f((D*E - B*F) / G, (A*F - C*E) / G);
+        return HGE::Vector2f((D * E - B * F) / G, (A * F - C * E) / G);
     }
 }
 

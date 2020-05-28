@@ -10,18 +10,21 @@
 
 class RoguePlayer : public HGE::GameObject {
 
-    HGE::TickComponent* mTickComponent;
-    HGE::SpriteComponent* mSpriteComponent;
-    HGE::ControlComponent* mControlComponent;
-    HGE::PositionComponent* mPositionComponent;
-    HGE::CameraComponent* mCameraComponent;
+    HGE::TickComponent *mTickComponent;
+    HGE::SpriteComponent *mSpriteComponent;
+    HGE::ControlComponent *mControlComponent;
+    HGE::PositionComponent *mPositionComponent;
+    HGE::CameraComponent *mCameraComponent;
 
-    float mMovementSpeed { 220 };
+    float mMovementSpeed{ 220 };
+
     void tickFunction(double deltaTime);
 
-    public:
+public:
     RoguePlayer() = default;
+
     ~RoguePlayer() override;
+
     void onCreate() override;
 };
 

@@ -8,7 +8,7 @@
 #include "rogue_game_environment.h"
 
 int main() {
-    auto* engine = HGE::Engine::instance();
+    auto *engine = HGE::Engine::instance();
     HGE::Engine::useGraphicsModule<HGE::OpenglModule>();
     HGE::Engine::graphicsModule()->setGameTitle("Hestia Roguelike v1.0");
 

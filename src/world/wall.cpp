@@ -24,5 +24,6 @@ void Wall::onCreate() {
                                                                          "./assets/shaders/fragmentShader.fs");
 
     mSpriteComponent->mMaterial = HGE::Engine::graphicsModule()->getMaterial
-            (backWallTiles[HGE::randomNumberBetween<int>(0, 3)].c_str());
+                                                                       (backWallTiles[HGE::randomNumberBetween<int>(0,
+                                                                                                                    3)].c_str());
 }

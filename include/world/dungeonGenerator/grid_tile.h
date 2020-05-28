@@ -18,13 +18,16 @@ enum class GridTileType {
 
 struct GridTile {
     GridTileType mType;
-    Room* mRoomPtr;
-    Path* mPathPtr;
+    Room *mRoomPtr;
+    Path *mPathPtr;
 
     GridTile() : mType(GridTileType::EMPTY) { }
+
     GridTile(GridTileType type) : mType(type) { }
-    GridTile(GridTileType type, Room* room) : mType(type), mRoomPtr(room) { }
-    GridTile(GridTileType type, Path* path) : mType(type), mPathPtr(path) { }
+
+    GridTile(GridTileType type, Room *room) : mType(type), mRoomPtr(room) { }
+
+    GridTile(GridTileType type, Path *path) : mType(type), mPathPtr(path) { }
 };
 
 

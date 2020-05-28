@@ -10,7 +10,7 @@
 #include "maths/components/edge.h"
 
 struct Polygon {
-    std::vector<Edge*> edges{ };
+    std::vector<Edge *> edges{ };
 };
 
 #endif //HESTIA_ROGUELIKE_MATHS_POLYGON_H

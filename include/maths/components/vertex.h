@@ -13,11 +13,14 @@ struct Vertex {
     HGE::Pointf mMagnitude;
 
     Vertex(int id, HGE::Pointf x, HGE::Pointf y) : mId(id), mPosition(x, y), mMagnitude(magnitude()) { }
+
     explicit Vertex(int id, HGE::Vector2f location) : mId(id), mPosition(location), mMagnitude(magnitude()) { }
+
     ~Vertex() = default;
 
-    [[nodiscard]] const HGE::Pointf& x() const noexcept { return mPosition.x; }
-    [[nodiscard]] const HGE::Pointf& y() const noexcept { return mPosition.y; }
+    [[nodiscard]] const HGE::Pointf &x() const noexcept { return mPosition.x; }
+
+    [[nodiscard]] const HGE::Pointf &y() const noexcept { return mPosition.y; }
 
 private:
     [[nodiscard]]

@@ -21,7 +21,7 @@ void RoguePlayer::onCreate() {
     mControlComponent = createComponent<HGE::ControlComponent>(getId());
     mCameraComponent = createComponent<HGE::CameraComponent>(getId(), HGE::CameraView(800, 600), true);
 
-    mTickComponent->mTickFunction = [&] (double deltaTime) { this->tickFunction(deltaTime); };
+    mTickComponent->mTickFunction = [&](double deltaTime) { this->tickFunction(deltaTime); };
 
     mPositionComponent->mTransform.mLocalPosition.x = 400;
     mPositionComponent->mTransform.mLocalPosition.y = 300;
@@ -42,23 +42,23 @@ void RoguePlayer::onCreate() {
 void RoguePlayer::tickFunction(double deltaTime) {
     mSpriteComponent->mTransform.mRotation += 180 * deltaTime;
 
-    if(mControlComponent->getKeyValue(HGE::DOWN_ARROW_KEY)) {
+    if (mControlComponent->getKeyValue(HGE::DOWN_ARROW_KEY)) {
         mPositionComponent->mTransform.mLocalPosition.y -= mMovementSpeed * deltaTime;
     }
 
-    if(mControlComponent->getKeyValue(HGE::UP_ARROW_KEY)) {
+    if (mControlComponent->getKeyValue(HGE::UP_ARROW_KEY)) {
         mPositionComponent->mTransform.mLocalPosition.y += mMovementSpeed * deltaTime;
     }
 
-    if(mControlComponent->getKeyValue(HGE::LEFT_ARROW_KEY)) {
+    if (mControlComponent->getKeyValue(HGE::LEFT_ARROW_KEY)) {
         mPositionComponent->mTransform.mLocalPosition.x -= mMovementSpeed * deltaTime;
     }
 
-    if(mControlComponent->getKeyValue(HGE::RIGHT_ARROW_KEY)) {
+    if (mControlComponent->getKeyValue(HGE::RIGHT_ARROW_KEY)) {
         mPositionComponent->mTransform.mLocalPosition.x += mMovementSpeed * deltaTime;
     }
 
     mCameraComponent->mCameraView.mViewportPosition = mPositionComponent->mTransform.mLocalPosition;
-    mCameraComponent->mCameraView.mViewportPosition.x -= mCameraComponent->mCameraView.mViewportSize.x/2;
-    mCameraComponent->mCameraView.mViewportPosition.y -= mCameraComponent->mCameraView.mViewportSize.y/2;
+    mCameraComponent->mCameraView.mViewportPosition.x -= mCameraComponent->mCameraView.mViewportSize.x / 2;
+    mCameraComponent->mCameraView.mViewportPosition.y -= mCameraComponent->mCameraView.mViewportSize.y / 2;
 }

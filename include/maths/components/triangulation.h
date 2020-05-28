@@ -16,9 +16,12 @@ struct Triangulation {
     std::vector<std::unique_ptr<Edge>> mEdges{ };
     std::vector<std::unique_ptr<Triangle>> mTriangles{ };
 
-    void deleteTriangle(const Triangle* triangle);
-    void deleteEdge(const Edge* edge);
+    void deleteTriangle(const Triangle *triangle);
+
+    void deleteEdge(const Edge *edge);
+
     void deleteVertex(const int id);
+
     void deleteTrianglesAndEdges(const std::vector<Triangle *> &triangles, const std::vector<Edge *> &edges);
 };
 

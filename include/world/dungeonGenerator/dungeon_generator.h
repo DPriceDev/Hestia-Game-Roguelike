@@ -34,31 +34,39 @@ class DungeonGenerator {
         std::vector<Path> mPaths;
     };
 
-    HGE::DebugComponent* mDebug;
+    HGE::DebugComponent *mDebug;
 
     std::vector<std::unique_ptr<Room>> mRooms{ };
     std::random_device mRandomDevice{ };
     std::mt19937 mGenerator{ mRandomDevice() };
-    std::uniform_real_distribution<float> mRadiusDistribution { 0, S_RADIUS_SQRD };
-    std::uniform_real_distribution<float> mAngleDistribution { 0, S_TWO_PI };
+    std::uniform_real_distribution<float> mRadiusDistribution{ 0, S_RADIUS_SQRD };
+    std::uniform_real_distribution<float> mAngleDistribution{ 0, S_TWO_PI };
 
-    HGE::Vector2i randomPointInCircle();
-    HGE::Vector2i pointOnRoomClosestToPoint(Room* room, HGE::Vector2i);
+    auto randomPointInCircle() -> HGE::Vector2i;
 
-    std::vector<std::unique_ptr<Room>> generateRandomRooms(const int numberOfRooms);
-    static auto extractSmallAreaRoomsFromVector(std::vector<std::unique_ptr<Room>> &rooms);
-    static auto separateRooms(std::vector<std::unique_ptr<Room>> &rooms);
-    static HGE::Grid<std::unique_ptr<GridTile>> createDungeonGridFromRooms(std::vector<std::unique_ptr<Room>> &rooms);
+    static auto pointOnRoomClosestToPoint(Room *room, HGE::Vector2i) -> HGE::Vector2i;
 
-    static void insertRoomIntoGrid(HGE::Grid<std::unique_ptr<GridTile>> &grid, Room* room);
+    auto generateRandomRooms(int numberOfRooms) -> std::vector<std::unique_ptr<Room>>;
+
+    static auto
+    extractSmallAreaRoomsFromVector(std::vector<std::unique_ptr<Room>> &rooms) -> std::vector<std::unique_ptr<Room>>;
+
+    static auto separateRooms(std::vector<std::unique_ptr<Room>> &rooms) -> std::vector<std::unique_ptr<Room>>;
+
+    static auto
+    createDungeonGridFromRooms(std::vector<std::unique_ptr<Room>> &rooms) -> HGE::Grid<std::unique_ptr<GridTile>>;
+
+    static void insertRoomIntoGrid(HGE::Grid<std::unique_ptr<GridTile>> &grid, Room *room);
+
     static void insertRoomsIntoGrid(HGE::Grid<std::unique_ptr<GridTile>> &grid,
                                     std::vector<std::unique_ptr<Room>> &rooms);
 
 public:
-    explicit DungeonGenerator(HGE::DebugComponent* debug) : mDebug(debug) { }
+    explicit DungeonGenerator(HGE::DebugComponent *debug) : mDebug(debug) { }
+
     ~DungeonGenerator() = default;
 
-    const std::vector<std::unique_ptr<Room>>& getRooms() {
+    auto getRooms() -> const std::vector<std::unique_ptr<Room>> & {
         return mRooms;
     }
 

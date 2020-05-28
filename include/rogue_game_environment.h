@@ -5,12 +5,15 @@
 
 class RogueGameEnvironment : public HGE::GameEnvironment {
 
-    public:
+public:
     RogueGameEnvironment() = default;
+
     ~RogueGameEnvironment() override = default;
 
     void beginGame() override;
-    void gameLoop(const double & deltaTime) override;
+
+    void gameLoop(const double &deltaTime) override;
+
     void endGame() override;
 };
 
