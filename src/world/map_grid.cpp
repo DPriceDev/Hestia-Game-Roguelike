@@ -5,16 +5,16 @@
 #include "world/map_grid.h"
 
 #include "world/floor_tile.h"
-#include "world/dungeonGenerator/dungeon_generator.h"
+#include "world/dungeon/dungeon_generator.h"
 
 void MapGrid::onCreate() {
     mDebugComponent = createComponent<HGE::DebugComponent>(getId());
 
     auto dungeonGen = DungeonGenerator(mDebugComponent);
 
-    dungeonGen.generate();
+    auto dungeon = dungeonGen.generate();
 
-    for (auto const &room : dungeonGen.getRooms()) {
+    for (auto const &room : dungeon.mMainRooms) {
         auto roomTile = createObject<FloorTile>();
         roomTile->mPosition->mTransform.mLocalPosition.x = (400 + room->mRect.mPosition.x) * 1.0f;
         roomTile->mPosition->mTransform.mLocalPosition.y = (300 + room->mRect.mPosition.y) * 1.0f;

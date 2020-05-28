@@ -26,5 +26,5 @@ set (INCLUDE_DIRS
         depends/hge/include)
 
 include_directories(${INCLUDE_DIRS})
-add_executable(hestia-Roguelike.app ${all_SRCS})
+add_executable(hestia-Roguelike.app ${all_SRCS} include/world/dungeon/room_generator.h include/world/dungeon/path_generator.h src/world/dungeon/room_generator.cpp src/world/dungeon/path_generator.cpp)
 target_link_libraries(hestia-Roguelike.app hestia)
