@@ -9,6 +9,7 @@
 #include <vector>
 #include <memory>
 #include <random>
+#include <algorithm>
 
 #include <util/logger.h>
 

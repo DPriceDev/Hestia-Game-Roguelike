@@ -57,7 +57,7 @@ auto PathGenerator::pointOnRoomClosestToPoint(Room *room, HGE::Vector2i point) -
 auto PathGenerator::generatePath(HGE::Grid<std::unique_ptr<GridTile> > &grid,
                                  const std::vector<std::unique_ptr<Room> > &rooms,
                                  const Connection &connection) -> Path {
-    /* get connected rooms */
+
     auto roomA = std::find_if(rooms.begin(), rooms.end(), [&](const auto &room) {
         return connection.mA == room->mId;
     });
@@ -81,9 +81,17 @@ auto PathGenerator::generatePath(HGE::Grid<std::unique_ptr<GridTile> > &grid,
         }
     };
 
+    const auto straightPathing = [] (const auto & adjacent) {
+
+        constexpr auto lowestScore = [](const auto &a, const auto &b) {
+            return a.mScore < b.mScore;
+        };
+
+        return std::min_element(adjacent.begin(), adjacent.end(), lowestScore);
+    };
+
     auto start = pointOnRoomClosestToPoint(roomA->get(), HGE::Vector2i(roomB->get()->mRect.midpoint()));
     auto finish = pointOnRoomClosestToPoint(roomB->get(), start);
 
-    auto pathSearcher = BreadthPathGenerator(grid, scoreByTile);
-    return pathSearcher.generatePath(start, finish, roomIds);
+    return BreadthPathGenerator(grid, scoreByTile, straightPathing).generatePath(start, finish, roomIds);
 }

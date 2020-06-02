@@ -7,6 +7,7 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
+#include <functional>
 
 #include <maths/maths_types.h>
 
@@ -39,7 +40,6 @@ auto DungeonGenerator::createDungeonGridFromRooms(std::vector<std::unique_ptr<Ro
     auto originX = left - sGridSpacing;
     auto originY = bottom - sGridSpacing;
 
-    /* todo: pointer issue? grid size? */
     auto newGrid = HGE::Grid<std::unique_ptr<GridTile>>(width, height, originX, originY);
     return std::move(newGrid);
 }
@@ -53,43 +53,25 @@ void DungeonGenerator::insertRoomsIntoGrid(HGE::Grid<std::unique_ptr<GridTile>> 
 }
 
 /**
- *
- * @param grid
- * @param room
+ * Insert Room Into Grid
+ * @param grid - grid to insert room into.
+ * @param room - pointer to room to be attached to tile.
  */
-// todo: heavy duplication, can reduce?
 void DungeonGenerator::insertRoomIntoGrid(HGE::Grid<std::unique_ptr<GridTile>> &grid, Room *room) {
-    /* insert bottom row of walls */
-    for (int i = 0; i < room->mRect.mSize.x; ++i) {
-        grid.at(room->mRect.mPosition.x + i, room->mRect.mPosition.y)
-                = std::make_unique<GridTile>(GridTileType::WALL, room);
-    }
+    auto tileType = GridTileType::ROOM_FLOOR;
+    const auto insertTile = [&room, &tileType]() {
+        return std::make_unique<GridTile>(tileType, room);
+    };
 
-    /* insert top row of walls */
-    for (int i = 0; i < room->mRect.mSize.x; ++i) {
-        grid.at(room->mRect.mPosition.x + i, room->mRect.topLeft().y)
-                = std::make_unique<GridTile>(GridTileType::WALL, room);
-    }
+    auto &rect = room->mRect;
+    auto gridView = HGE::GridView<std::unique_ptr<GridTile>>(grid, rect.bottomLeft(), rect.topRight());
+    std::generate(gridView.begin(), gridView.end(), insertTile);
 
-    /* insert left row of walls */
-    for (int i = 0; i < room->mRect.mSize.y; ++i) {
-        grid.at(room->mRect.mPosition.x, room->mRect.mPosition.y + i)
-                = std::make_unique<GridTile>(GridTileType::WALL, room);
-    }
-
-    /* insert right row of walls */
-    for (int i = 0; i < room->mRect.mSize.y; ++i) {
-        grid.at(room->mRect.bottomRight().x, room->mRect.mSize.y + i)
-                = std::make_unique<GridTile>(GridTileType::WALL, room);
-    }
-
-    /* insert floor tiles */
-    for (int i = 1; i < room->mRect.mSize.y - 1; ++i) {
-        for (int i = 1; i < room->mRect.mSize.x - 1; ++i) {
-            grid.at(room->mRect.mPosition.x + i, room->mRect.mSize.y + i)
-                    = std::make_unique<GridTile>(GridTileType::ROOM_FLOOR, room);
-        }
-    }
+    tileType = GridTileType::WALL;
+    std::generate(grid.row(rect.bottomLeft()), ++grid.row(rect.bottomRight()), insertTile);
+    std::generate(grid.row(rect.topLeft()), ++grid.row(rect.topRight()), insertTile);
+    std::generate(++grid.column(rect.bottomLeft()), grid.column(rect.topLeft()), insertTile);
+    std::generate(++grid.column(rect.bottomRight()), grid.column(rect.topRight()), insertTile);
 }
 
 /**

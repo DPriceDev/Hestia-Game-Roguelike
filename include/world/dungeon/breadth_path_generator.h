@@ -17,7 +17,7 @@
 
 #include "grid_tile.h"
 
-template<class Type, class ScoreOperator>
+template<class Type, class ScoreOperator, class PathingOperator>
 class BreadthPathGenerator {
     const std::array<HGE::Vector2i, 4> sOffsets{
             HGE::Vector2i{ 0, 1 },
@@ -29,7 +29,11 @@ class BreadthPathGenerator {
 
     HGE::Grid<Type> &mGrid;
     ScoreOperator mScoreOperator;
+    PathingOperator mPathingOperator;
 
+    /**
+     * Internal Tile Class
+     */
     struct Tile {
         HGE::Vector2i mPosition{ 0, 0 };
         int mScore{ sMaxScore };
@@ -85,7 +89,7 @@ class BreadthPathGenerator {
      *
      */
     auto traceBackPath(HGE::Grid<Tile> &tileGrid, const HGE::Vector2i &start,
-                       const HGE::Vector2i &finish, const std::vector<int> &tileIds) {
+                       const HGE::Vector2i &finish, const std::vector<int> &tileIds) -> Path {
         std::vector<HGE::Vector2i> pathNodes{ finish };
         HGE::Vector2i currentNode = finish;
 
@@ -102,14 +106,11 @@ class BreadthPathGenerator {
                 return tileGrid.isPointInGrid(adjPosition.x, adjPosition.y);
             };
 
-            constexpr auto lowestScore = [](const auto &a, const auto &b) {
-                return a.mScore < b.mScore;
-            };
-
             ATA::transform_if(sOffsets.begin(), sOffsets.end(),
                               std::back_inserter(adjacent), createAdjacent, isInGrid);
 
-            auto it = std::min_element(adjacent.begin(), adjacent.end(), lowestScore);
+            auto it = mPathingOperator(adjacent);
+
             currentNode = it->mPosition;
             pathNodes.push_back(it->mPosition);
 
@@ -122,8 +123,8 @@ class BreadthPathGenerator {
     }
 
 public:
-    BreadthPathGenerator(HGE::Grid<Type> &grid, ScoreOperator scoreOperator)
-            : mGrid(grid), mScoreOperator(scoreOperator) { }
+    BreadthPathGenerator(HGE::Grid<Type> &grid, ScoreOperator scoreOperator, PathingOperator pathingOperator)
+            : mGrid(grid), mScoreOperator(scoreOperator), mPathingOperator(pathingOperator) { }
 
     ~BreadthPathGenerator() = default;
 
@@ -135,7 +136,9 @@ public:
      * @param finish
      * @return
      */
-    Path generatePath(const HGE::Vector2i &start, const HGE::Vector2i &finish, const std::vector<int> &tileIds) {
+    Path generatePath(const HGE::Vector2i &start,
+                      const HGE::Vector2i &finish,
+                      const std::vector<int> &tileIds) {
         auto tileGrid = breadthSearch(start, finish);
         return traceBackPath(tileGrid, start, finish, tileIds);
     }
