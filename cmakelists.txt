@@ -1,30 +1,50 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.15)
 
 # set the project name
-project(hestia-roguelike VERSION 1.0)
+project(hestia-roguelike LANGUAGES CXX VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fsanitize=undefined")
 
-add_subdirectory(depends/hge)
+include(cmake/StandardProjectSettings.cmake)
 
-file(GLOB all_SRCS
-        "${PROJECT_SOURCE_DIR}/src/*/*/*/*/*.cpp"
-        "${PROJECT_SOURCE_DIR}/src/*/*/*/*.cpp"
-        "${PROJECT_SOURCE_DIR}/src/**/*/*.cpp"
-        "${PROJECT_SOURCE_DIR}/src/*/*.cpp"
-        "${PROJECT_SOURCE_DIR}/src/*.cpp"
-        "${PROJECT_SOURCE_DIR}/src/*/*/*.c"
-        "${PROJECT_SOURCE_DIR}/src/*/*.c"
-        "${PROJECT_SOURCE_DIR}/src/*.c"
-        )
+add_library(roguelike_project_options INTERFACE)
+target_compile_features(roguelike_project_options INTERFACE cxx_std_17)
 
-set (INCLUDE_DIRS
-        include
-        depends/hge/include)
+if(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+    option(ENABLE_BUILD_WITH_TIME_TRACE "Enable -ftime-trace to generate time tracing .json files on clang" OFF)
+    if (ENABLE_BUILD_WITH_TIME_TRACE)
+        add_compile_definitions(roguelike_project_options INTERFACE -ftime-trace)
+    endif()
+endif()
 
-include_directories(${INCLUDE_DIRS})
-add_executable(hestia-Roguelike.app ${all_SRCS} include/world/dungeon/room_generator.h include/world/dungeon/path_generator.h src/world/dungeon/room_generator.cpp src/world/dungeon/path_generator.cpp)
-target_link_libraries(hestia-Roguelike.app hestia)
+add_library(roguelike_project_warnings INTERFACE)
+
+# enable cache system
+#include(cmake/Cache.cmake)
+
+# enable doxygen
+include(cmake/Doxygen.cmake)
+enable_doxygen()
+
+# standard compiler warnings
+include(cmake/CompilerWarnings.cmake)
+set_project_warnings(roguelike_project_warnings)
+
+# sanitizer options if supported by compiler
+include(cmake/Sanitizers.cmake)
+enable_sanitizers(roguelike_project_options)
+
+# allow for static analysis options
+include(cmake/StaticAnalyzers.cmake)
+
+option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
+option(ENABLE_TESTING "Enable Test Builds" ON)
+
+option(ENABLE_PCH "Enable Precompiled Headers" OFF)
+if (ENABLE_PCH)
+    target_precompile_headers(roguelike_project_options INTERFACE <vector> <utility> <algorithm> <array>)
+endif()
+
+add_subdirectory(depends)
+add_subdirectory(src)
