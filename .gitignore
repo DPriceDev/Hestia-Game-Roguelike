@@ -44,6 +44,12 @@ install_manifest.txt
 .vscode
 .vscode/*
 
+# vs studio files
+.vs
+.vs/*
+out
+out/*
+
 # clangd
 .clangd
 compile_commands.json

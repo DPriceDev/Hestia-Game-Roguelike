@@ -2,8 +2,9 @@
 // Created by David Price on 28/05/2020.
 //
 
-#include "world/dungeon/path_generator.h"
+#define _USE_MATH_DEFINES
 
+#include "world/dungeon/path_generator.h"
 #include <cmath>
 #include <maths/maths_types.h>
 

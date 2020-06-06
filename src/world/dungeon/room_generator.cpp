@@ -8,6 +8,7 @@
 #include <vector>
 #include <random>
 #include <algorithm>
+#include <numeric>
 
 #include "world/dungeon/breadth_path_generator.h"
 

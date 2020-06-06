@@ -5,10 +5,14 @@
 #ifndef HESTIA_ROGUELIKE_WORLD_DUNGEON_GENERATOR_ROOM_GENERATOR_H
 #define HESTIA_ROGUELIKE_WORLD_DUNGEON_GENERATOR_ROOM_GENERATOR_H
 
+#define _USE_MATH_DEFINES
+
 #include <vector>
 #include <random>
 #include <memory>
 #include <utility>
+#include <cmath>
+#include <math.h>
 
 #include <maths/maths_types.h>
 
