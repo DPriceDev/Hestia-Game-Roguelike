@@ -86,17 +86,17 @@ Vertex Delaunay::getFurthestPointOfVertices(const std::vector<Vertex> &vertices)
 
 /** create a super triangle, bigger than the furthest point. */
 void Delaunay::createSuperTriangleFromFurthestPoint(Triangulation &triangulation, const Vertex &furthest) {
-    constexpr static float sSuperTriangleOffset = 30.0;
-    const static double adjacent = sqrt(3);
-    const static double height = adjacent / 2;
-    auto radius = furthest.mMagnitude + sSuperTriangleOffset;
+    constexpr static float sSuperTriangleOffset = 30.0f;
+    const static float adjacent = sqrt(3.0f);
+    const static float height = adjacent / 2.0f;
+    float radius = furthest.mMagnitude + sSuperTriangleOffset;
 
     auto vertA = triangulation.mVertices.emplace_back(
             std::make_unique<Vertex>(-1, -(radius * adjacent), -radius)).get();
     auto vertB = triangulation.mVertices.emplace_back(
             std::make_unique<Vertex>(-2, radius * adjacent, -radius)).get();
     auto vertC = triangulation.mVertices.emplace_back(
-            std::make_unique<Vertex>(-3, 0.0f, ((radius * 2) + (radius * adjacent)) * 0.5)).get();
+            std::make_unique<Vertex>(-3, 0.0f, ((radius * 2.0f) + (radius * adjacent)) * 0.5f)).get();
 
     auto edgeAB = triangulation.mEdges.emplace_back(
             std::make_unique<Edge>(vertA, vertB)).get();
