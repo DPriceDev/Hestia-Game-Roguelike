@@ -43,6 +43,7 @@ install_manifest.txt
 # vs code files
 .vscode
 .vscode/*
+CMakeSettings.json
 
 # vs studio files
 .vs

@@ -14,7 +14,6 @@
 #include "room.h"
 #include "path.h"
 #include "grid_tile.h"
-#include "breadth_path_generator.h"
 
 class PathGenerator {
     static auto pointOnRoomClosestToPoint(Room *room, HGE::Vector2i) -> HGE::Vector2i;

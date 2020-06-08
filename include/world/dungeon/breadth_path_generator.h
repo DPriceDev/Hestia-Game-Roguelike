@@ -5,7 +5,6 @@
 #ifndef HESTIA_ROGUELIKE_WORLD_DUNGEONGENERATOR_PATH_GENERATOR_H
 #define HESTIA_ROGUELIKE_WORLD_DUNGEONGENERATOR_PATH_GENERATOR_H
 
-#include <queue>
 #include <memory>
 #include <array>
 #include <map>
@@ -24,8 +23,6 @@ class BreadthPathGenerator {
             HGE::Vector2i{ 1, 0 },
             HGE::Vector2i{ 0, -1 },
             HGE::Vector2i{ -1, 0 }};
-
-    const static int sMaxScore = 99999999;
 
     HGE::Grid<Type> &mGrid;
     ScoreOperator mScoreOperator;
@@ -46,6 +43,25 @@ class BreadthPathGenerator {
     };
 
     /**
+     * Internal Pathing Operator Struct
+     */
+     struct PathingData {
+         HGE::Vector2i mStart;
+         HGE::Vector2i mFinish;
+         std::array<Tile, 4> mAdjacentTiles{ };
+         HGE::Vector2i mCurrentTile;
+         HGE::Vector2i mPreviousTile;
+         int mCurrentScore;
+
+         PathingData(const HGE::Vector2i &start, const HGE::Vector2i &finish, const int &currentScore)
+             : mStart(start),
+               mFinish(finish),
+               mCurrentTile(start),
+               mPreviousTile(start),
+               mCurrentScore(currentScore) { }
+     };
+
+    /**
      *
      */
     auto breadthSearch(const HGE::Vector2i &start, const HGE::Vector2i &finish) {
@@ -62,7 +78,7 @@ class BreadthPathGenerator {
 
                 if (mGrid.isPointInGrid(adjPosition.x, adjPosition.y)) {
                     auto adjTile = tileGrid.at(adjPosition.x, adjPosition.y);
-                    auto newScore = mScoreOperator(mGrid.at(adjPosition.x, adjPosition.y), tileQueue.front().mScore);
+                    auto newScore = mScoreOperator(adjPosition, mGrid.at(adjPosition.x, adjPosition.y), tileQueue.front().mScore);
 
                     if (!adjTile.mVisited) {
                         auto newTile = Tile(adjPosition, newScore, true);
@@ -91,30 +107,35 @@ class BreadthPathGenerator {
     auto traceBackPath(HGE::Grid<Tile> &tileGrid, const HGE::Vector2i &start,
                        const HGE::Vector2i &finish, const std::vector<int> &tileIds) -> Path {
         std::vector<HGE::Vector2i> pathNodes{ finish };
-        HGE::Vector2i currentNode = finish;
 
-        while (currentNode != start) {
-            auto adjacent = std::vector<Tile>();
+        auto pathingData = PathingData(finish, start, tileGrid.at(finish.x, finish.y).mScore);
 
-            const auto createAdjacent = [&tileGrid, &currentNode](const auto &offset) {
-                const auto adjPosition = currentNode + offset;
-                return tileGrid.at(adjPosition.x, adjPosition.y);
+        while (pathingData.mCurrentTile != start) {
+
+            const auto createAdjacent = [&tileGrid, &pathingData] (const auto &offset) {
+                const auto adjPosition = pathingData.mCurrentTile + offset;
+
+                if(tileGrid.isPointInGrid(adjPosition.x, adjPosition.y)) {
+                  return tileGrid.at(adjPosition.x, adjPosition.y);
+                } else {
+                  return Tile(adjPosition, sMaxScore, true);
+                }
             };
 
-            const auto isInGrid = [&tileGrid, &currentNode](const auto &offset) {
-                const auto adjPosition = currentNode + offset;
+            const auto isInGrid = [&tileGrid, &pathingData](const auto &offset) {
+                const auto adjPosition = pathingData.mCurrentTile + offset;
                 return tileGrid.isPointInGrid(adjPosition.x, adjPosition.y);
             };
 
-            ATA::transform_if(sOffsets.begin(), sOffsets.end(),
-                              std::back_inserter(adjacent), createAdjacent, isInGrid);
+            std::transform(sOffsets.begin(), sOffsets.end(),
+                           pathingData.mAdjacentTiles.begin(), createAdjacent);
 
-            auto it = mPathingOperator(adjacent);
+            auto newTile = mPathingOperator(pathingData);
+            pathingData.mPreviousTile = pathingData.mCurrentTile;
+            pathingData.mCurrentTile = newTile.mPosition;
+            pathNodes.push_back(newTile.mPosition);
 
-            currentNode = it->mPosition;
-            pathNodes.push_back(it->mPosition);
-
-            if (it->mScore >= 99999999) {
+            if (newTile.mScore >= sMaxScore) {
                 LOG_DEBUG("Breadth Path Generator", "minimum is 99999999!")
                 break;
             }
@@ -123,6 +144,8 @@ class BreadthPathGenerator {
     }
 
 public:
+    static const int sMaxScore = 99999999;
+
     BreadthPathGenerator(HGE::Grid<Type> &grid, ScoreOperator scoreOperator, PathingOperator pathingOperator)
             : mGrid(grid), mScoreOperator(scoreOperator), mPathingOperator(pathingOperator) { }
 

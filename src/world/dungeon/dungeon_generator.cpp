@@ -111,24 +111,6 @@ auto DungeonGenerator::generate() -> Dungeon {
                              10.0f,
                              { 255, 255, 255 });
         }
-
-        /** todo: remove debug draw! */
-        for (auto const &connection : minimumSpanTree.mConnections) {
-            auto a = std::find_if(triangulation.mVertices.begin(), triangulation.mVertices.end(),
-                                  [&connection](std::unique_ptr<Vertex> &vert) {
-                                      return vert->mId == connection.mA;
-                                  })->get();
-
-            auto b = std::find_if(triangulation.mVertices.begin(), triangulation.mVertices.end(),
-                                  [&connection](std::unique_ptr<Vertex> &vert) {
-                                      return vert->mId == connection.mB;
-                                  })->get();
-
-            mDebug->drawLine(HGE::Vector2f(400 + a->x(), 300 + a->y()),
-                             HGE::Vector2f(400 + b->x(), 300 + b->y()),
-                             10.0f,
-                             { 255, 0, 255 });
-        }
     }
 
     /* Get position of the door for each room */
