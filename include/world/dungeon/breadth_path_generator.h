@@ -76,6 +76,14 @@ class BreadthPathGenerator {
             for (auto &offset: sOffsets) {
                 auto adjPosition = tileQueue.front().mPosition + offset;
 
+                if (adjPosition == finish) {
+                    endReached = true;
+                    auto newTile = Tile(adjPosition, sMaxScore, true);
+                    tileGrid.at(adjPosition.x, adjPosition.y) = newTile;
+                    tileQueue.push(newTile);
+                    break;
+                }
+
                 if (mGrid.isPointInGrid(adjPosition.x, adjPosition.y)) {
                     auto adjTile = tileGrid.at(adjPosition.x, adjPosition.y);
                     auto newScore = mScoreOperator(adjPosition, mGrid.at(adjPosition.x, adjPosition.y), tileQueue.front().mScore);
@@ -88,11 +96,6 @@ class BreadthPathGenerator {
                         }
                     } else if (adjTile.mScore > newScore) {
                         adjTile.mScore = newScore;
-                    }
-
-                    if (adjPosition == finish) {
-                        endReached = true;
-                        break;
                     }
                 }
             }
@@ -122,11 +125,6 @@ class BreadthPathGenerator {
                 }
             };
 
-            const auto isInGrid = [&tileGrid, &pathingData](const auto &offset) {
-                const auto adjPosition = pathingData.mCurrentTile + offset;
-                return tileGrid.isPointInGrid(adjPosition.x, adjPosition.y);
-            };
-
             std::transform(sOffsets.begin(), sOffsets.end(),
                            pathingData.mAdjacentTiles.begin(), createAdjacent);
 
@@ -136,7 +134,7 @@ class BreadthPathGenerator {
             pathNodes.push_back(newTile.mPosition);
 
             if (newTile.mScore >= sMaxScore) {
-                LOG_DEBUG("Breadth Path Generator", "minimum is 99999999!")
+                LOG_DEBUG("Breadth Path Generator", "minimum is 99999999!", start.x, start.y, finish.x, finish.y)
                 break;
             }
         }

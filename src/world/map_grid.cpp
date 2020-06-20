@@ -16,11 +16,11 @@ void MapGrid::onCreate() {
 
     for (auto const &room : dungeon.mMainRooms) {
         auto roomTile = createObject<FloorTile>();
-        roomTile->mPosition->mTransform.mLocalPosition.x = (400 + room->mRect.mPosition.x) * 1.0f;
-        roomTile->mPosition->mTransform.mLocalPosition.y = (300 + room->mRect.mPosition.y) * 1.0f;
+        roomTile->mPosition->mTransform.mLocalPosition.x = (400 + room->mRect.position().x) * 1.0f;
+        roomTile->mPosition->mTransform.mLocalPosition.y = (300 + room->mRect.position().y) * 1.0f;
 
-        roomTile->mSprite->mTransform.mScale.x = room->mRect.mSize.x * 1.0f;
-        roomTile->mSprite->mTransform.mScale.y = room->mRect.mSize.y * 1.0f;
+        roomTile->mSprite->mTransform.mScale.x = room->mRect.size().x * 1.0f;
+        roomTile->mSprite->mTransform.mScale.y = room->mRect.size().y * 1.0f;
         roomTile->mSprite->mAlpha = 0.5f;
     }
 }

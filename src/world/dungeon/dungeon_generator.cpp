@@ -4,12 +4,9 @@
 
 #include "world/dungeon/dungeon_generator.h"
 
-#include <cmath>
 #include <vector>
 #include <algorithm>
 #include <functional>
-
-#include <maths/maths_types.h>
 
 #include "world/dungeon/room_generator.h"
 #include "world/dungeon/path_generator.h"
@@ -25,10 +22,10 @@
 
 auto DungeonGenerator::createDungeonGridFromRooms(std::vector<std::unique_ptr<Room>> &rooms)
 -> HGE::Grid<std::unique_ptr<GridTile>> {
-    const auto highestRoom = [](const auto &a, const auto &b) { return a->mRect.mPosition.y < b->mRect.mPosition.y; };
-    const auto leftMostRoom = [](const auto &a, const auto &b) { return a->mRect.mPosition.x > b->mRect.mPosition.x; };
-    const auto rightMostRoom = [](const auto &a, const auto &b) { return a->mRect.mPosition.x < b->mRect.mPosition.x; };
-    const auto lowestRoom = [](const auto &a, const auto &b) { return a->mRect.mPosition.y > b->mRect.mPosition.y; };
+    const auto highestRoom = [](const auto &a, const auto &b) { return a->mRect.position().y < b->mRect.position().y; };
+    const auto leftMostRoom = [](const auto &a, const auto &b) { return a->mRect.position().x > b->mRect.position().x; };
+    const auto rightMostRoom = [](const auto &a, const auto &b) { return a->mRect.position().x < b->mRect.position().x; };
+    const auto lowestRoom = [](const auto &a, const auto &b) { return a->mRect.position().y > b->mRect.position().y; };
 
     auto top = std::max_element(rooms.begin(), rooms.end(), highestRoom)->get()->mRect.topLeft().y;
     auto left = std::max_element(rooms.begin(), rooms.end(), leftMostRoom)->get()->mRect.topLeft().x;
@@ -84,7 +81,7 @@ auto DungeonGenerator::generate() -> Dungeon {
     auto generatedRooms = roomGenerator.generateRooms(sNumberOfInitialRooms);
 
     auto const midpointFromRoom = [](const auto &room) {
-        return std::make_pair(room->mId, room->mRect.midpoint());
+        return std::make_pair(room->mId, HGE::Vector2f(room->mRect.midpoint()));
     };
 
     auto midpoints = std::vector<std::pair<int, HGE::Vector2f>>();

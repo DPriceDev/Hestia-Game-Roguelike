@@ -9,18 +9,19 @@
 
 struct Room {
     int mId;
-    HGE::Recti mRect{ };
+    HGE::Recti mRect;
     HGE::Vector2i mMovement{ };
 
-    explicit Room(int id) : mId(id) { }
-
     Room(int id, HGE::Recti rect) : mId(id), mRect(rect) { }
-
-    ~Room() = default;
 
     bool operator!=(const Room &other) const {
         return this->mId != other.mId;
     }
+
+    const HGE::Vector2i topRight() const { return mRect.topRight(); }
+    const HGE::Vector2i topLeft() const { return mRect.topLeft(); }
+    const HGE::Vector2i bottomRight() const { return mRect.bottomRight(); }
+    const HGE::Vector2i bottomLeft() const { return mRect.bottomLeft(); }
 };
 
 

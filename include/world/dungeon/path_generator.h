@@ -17,6 +17,8 @@
 
 class PathGenerator {
     static auto pointOnRoomClosestToPoint(Room *room, HGE::Vector2i) -> HGE::Vector2i;
+    static auto endpointsFromRooms(Room *roomStart, Room* roomFinish) -> std::pair<HGE::Vector2i, HGE::Vector2i>;
+
 public:
     static auto generatePath(HGE::Grid<std::unique_ptr<GridTile>> &grid,
                              const std::vector<std::unique_ptr<Room>> &rooms,
