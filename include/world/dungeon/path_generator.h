@@ -16,8 +16,8 @@
 #include "grid_tile.h"
 
 class PathGenerator {
-    static auto pointOnRoomClosestToPoint(Room *room, HGE::Vector2i) -> HGE::Vector2i;
-    static auto endpointsFromRooms(Room *roomStart, Room* roomFinish) -> std::pair<HGE::Vector2i, HGE::Vector2i>;
+
+    static Path shrinkPathToRoomWalls(HGE::Grid<std::unique_ptr<GridTile>> &grid, Path &path, Room *roomA, Room *roomB);
 
 public:
     static auto generatePath(HGE::Grid<std::unique_ptr<GridTile>> &grid,

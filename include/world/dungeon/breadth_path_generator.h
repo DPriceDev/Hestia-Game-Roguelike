@@ -9,12 +9,17 @@
 #include <array>
 #include <map>
 #include <algorithm>
+#include <exception>
 
 #include <maths/maths.h>
 #include <maths/maths_types.h>
 #include <util/logger.h>
 
 #include "grid_tile.h"
+
+class BreadthPathingException : public std::exception {
+
+};
 
 template<class Type, class ScoreOperator, class PathingOperator>
 class BreadthPathGenerator {
@@ -61,9 +66,6 @@ class BreadthPathGenerator {
                mCurrentScore(currentScore) { }
      };
 
-    /**
-     *
-     */
     auto breadthSearch(const HGE::Vector2i &start, const HGE::Vector2i &finish) {
 
         auto startTile = Tile(start, 0, true);
@@ -104,9 +106,6 @@ class BreadthPathGenerator {
         return tileGrid;
     }
 
-    /**
-     *
-     */
     auto traceBackPath(HGE::Grid<Tile> &tileGrid, const HGE::Vector2i &start,
                        const HGE::Vector2i &finish, const std::vector<int> &tileIds) -> Path {
         std::vector<HGE::Vector2i> pathNodes{ finish };
@@ -134,8 +133,7 @@ class BreadthPathGenerator {
             pathNodes.push_back(newTile.mPosition);
 
             if (newTile.mScore >= sMaxScore) {
-                LOG_DEBUG("Breadth Path Generator", "minimum is 99999999!", start.x, start.y, finish.x, finish.y)
-                break;
+                throw BreadthPathingException();
             }
         }
         return Path(pathNodes, tileIds);
@@ -149,14 +147,6 @@ public:
 
     ~BreadthPathGenerator() = default;
 
-    /**
-     *
-     * @tparam Type
-     * @param grid
-     * @param start
-     * @param finish
-     * @return
-     */
     Path generatePath(const HGE::Vector2i &start,
                       const HGE::Vector2i &finish,
                       const std::vector<int> &tileIds) {
@@ -165,4 +155,4 @@ public:
     }
 };
 
-#endif //HESTIA_ROGUELIKE_WORLD_DUNGEONGENERATOR_PATH_GENERATOR_H
+#endif //HESTIA_ROGUELIKE_WORLD_DUNGEON_GENERATOR_PATH_GENERATOR_H

@@ -77,7 +77,7 @@ void DungeonGenerator::insertRoomIntoGrid(HGE::Grid<std::unique_ptr<GridTile>> &
 auto DungeonGenerator::generate() -> Dungeon {
 
     auto roomGenerator = RoomGenerator(mGenerator);
-    std::vector<std::unique_ptr<Room>> unusedRooms{ };
+    std::vector<std::unique_ptr<Room>> unusedRooms{};
     auto generatedRooms = roomGenerator.generateRooms(sNumberOfInitialRooms);
 
     auto const midpointFromRoom = [](const auto &room) {
@@ -96,7 +96,7 @@ auto DungeonGenerator::generate() -> Dungeon {
     auto grid = createDungeonGridFromRooms(generatedRooms.mRooms);
     insertRoomsIntoGrid(grid, generatedRooms.mRooms);
 
-    for (auto & connection : minimumSpanTree.mConnections) {
+    for (auto &connection : minimumSpanTree.mConnections) {
         auto path = PathGenerator::generatePath(grid, generatedRooms.mRooms, connection);
 
         for (int i = 1; i < path.mNodes.size(); ++i) {
@@ -106,19 +106,16 @@ auto DungeonGenerator::generate() -> Dungeon {
             mDebug->drawLine(HGE::Vector2f(400 + nodeA.x, 300 + nodeA.y),
                              HGE::Vector2f(400 + nodeB.x, 300 + nodeB.y),
                              10.0f,
-                             { 255, 255, 255 });
+                             {255, 255, 255});
         }
+
+        /* check if any rooms intersect the path */
+
+        /* insert minor rooms that intersect the path */
+
+        /* update path and insert that into the map grid */
+
     }
-
-    /* Get position of the door for each room */
-
-    /* for each connection, pass the map grid and connection a pathing class */
-
-    /* check if any rooms intersect the path */
-
-    /* insert minor rooms that intersect the path */
-
-    /* update path and insert that into the map grid */
 
     /* todo: return dungeon */
     auto dungeon = Dungeon();
