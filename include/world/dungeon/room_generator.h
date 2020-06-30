@@ -24,7 +24,7 @@ class RoomGenerator {
     constexpr static float sMinimumRoomSize = 6.0f;
     constexpr static float sMaximumRoomSize = 20.0f;
     constexpr static float sMinimumRoomArea = 220.0f;
-    constexpr static float sSeperationFactor = 4.0f;
+    constexpr static float sSeperationFactor = 10.0f;
 
     constexpr static float sRadius = 100.0f;
     constexpr static float sRadiusSqrd = sRadius * sRadius;

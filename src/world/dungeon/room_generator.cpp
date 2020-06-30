@@ -116,16 +116,23 @@ std::vector<std::unique_ptr<Room>> RoomGenerator::generateRandomRooms(const int 
  * @param rooms
  * @return
  */
-auto RoomGenerator::extractSmallAreaRoomsFromVector(
-        std::vector<std::unique_ptr<Room>> &rooms) -> std::vector<std::unique_ptr<Room>> {
+auto RoomGenerator::extractSmallAreaRoomsFromVector(std::vector<std::unique_ptr<Room>> &rooms)
+        -> std::vector<std::unique_ptr<Room>> {
+
+    // todo: minimum edge length discarded?
+    // todo: Expose as public variable
     const auto isAreaSmall = [](const auto &room) {
         return room->mRect.area() < sMinimumRoomArea;
     };
 
+    // todo: make some sort of vector to vector algorithm? move if?
     auto unusedRooms = std::vector<std::unique_ptr<Room>>();
-    auto unusedIt = std::remove_if(rooms.begin(), rooms.end(), isAreaSmall);
-    std::move(unusedIt, rooms.end(), std::back_inserter(unusedRooms));
-    rooms.erase(unusedIt, rooms.end());
-
-    return std::move(unusedRooms);
+    std::for_each(rooms.rbegin(), rooms.rend(), [&isAreaSmall, &rooms, &unusedRooms](auto & room) {
+        if(isAreaSmall(room)) {
+            auto it = std::find(rooms.begin(), rooms.end(), room);
+            unusedRooms.push_back(std::move(*it));
+            rooms.erase(it);
+        }
+    });
+    return unusedRooms;
 }

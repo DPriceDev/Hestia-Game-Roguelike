@@ -19,6 +19,9 @@ class PathGenerator {
 
     static Path shrinkPathToRoomWalls(HGE::Grid<std::unique_ptr<GridTile>> &grid, Path &path, Room *roomA, Room *roomB);
 
+    static std::pair<Room *, Room *> extractRoomPointersFromVectorById(const std::vector<std::unique_ptr<Room>> &rooms,
+                                                                       const Connection &connection);
+
 public:
     static auto generatePath(HGE::Grid<std::unique_ptr<GridTile>> &grid,
                              const std::vector<std::unique_ptr<Room>> &rooms,

@@ -23,6 +23,17 @@ void MapGrid::onCreate() {
         roomTile->mSprite->mTransform.mScale.y = room->mRect.size().y * 1.0f;
         roomTile->mSprite->mAlpha = 0.5f;
     }
+
+    for (auto const &room : dungeon.mMinorRooms) {
+        auto roomTile = createObject<FloorTile>();
+        roomTile->mPosition->mTransform.mLocalPosition.x = (400 + room->mRect.position().x) * 1.0f;
+        roomTile->mPosition->mTransform.mLocalPosition.y = (300 + room->mRect.position().y) * 1.0f;
+
+        roomTile->mSprite->mTransform.mScale.x = room->mRect.size().x * 1.0f;
+        roomTile->mSprite->mTransform.mScale.y = room->mRect.size().y * 1.0f;
+        roomTile->mSprite->mAlpha = 0.5f;
+        roomTile->mSprite->mTint = HGE::ColourRGBA(1.0f, 0.0f, 0.0f, 0.5f);
+    }
 }
 
 void MapGrid::addPlayerToStartRoom(RoguePlayer *roguePlayer) {
