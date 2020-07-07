@@ -2,11 +2,12 @@
 #define HESTIA_ROGUE_GAME_ENVIRONMENT_H
 
 #include <framework/game_envrionment.h>
+#include <context.h>
 
 class RogueGameEnvironment : public HGE::GameEnvironment {
 
 public:
-    RogueGameEnvironment() = default;
+    RogueGameEnvironment(HGE::Context* context) : HGE::GameEnvironment(context) { }
 
     ~RogueGameEnvironment() override = default;
 

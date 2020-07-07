@@ -28,10 +28,10 @@ void RoguePlayer::onCreate() {
     mSpriteComponent->mTransform.mScale.x = 100;
     mSpriteComponent->mTransform.mScale.y = mSpriteComponent->mTransform.mScale.x;
 
-    mSpriteComponent->mShader = HGE::Engine::graphicsModule()->getShader("./assets/shaders/basicSpriteVertexShader.vs",
+    mSpriteComponent->mShader = mContext->mGraphicsModule->getShader("./assets/shaders/basicSpriteVertexShader.vs",
                                                                          "./assets/shaders/fragmentShader.fs");
 
-    mSpriteComponent->mMaterial = HGE::Engine::graphicsModule()->getMaterial("./assets/textures/smileyFace.png");
+    mSpriteComponent->mMaterial = mContext->mGraphicsModule->getMaterial("./assets/textures/smileyFace.png");
 
     mControlComponent->addKey(HGE::UP_ARROW_KEY);
     mControlComponent->addKey(HGE::DOWN_ARROW_KEY);

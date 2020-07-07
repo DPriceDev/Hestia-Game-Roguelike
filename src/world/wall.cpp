@@ -20,10 +20,10 @@ void Wall::onCreate() {
     mSpriteComponent->mTransform.mScale.x = 32;
     mSpriteComponent->mTransform.mScale.y = mSpriteComponent->mTransform.mScale.x;
 
-    mSpriteComponent->mShader = HGE::Engine::graphicsModule()->getShader("./assets/shaders/basicSpriteVertexShader.vs",
+    mSpriteComponent->mShader = mContext->mGraphicsModule->getShader("./assets/shaders/basicSpriteVertexShader.vs",
                                                                          "./assets/shaders/fragmentShader.fs");
 
-    mSpriteComponent->mMaterial = HGE::Engine::graphicsModule()->getMaterial
+    mSpriteComponent->mMaterial = mContext->mGraphicsModule->getMaterial
                                                                        (backWallTiles[HGE::randomNumberBetween<int>(0,
                                                                                                                     3)].c_str());
 }

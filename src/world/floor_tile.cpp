@@ -19,9 +19,9 @@ void FloorTile::onCreate() {
     mSprite->mTransform.mScale.x = 32;
     mSprite->mTransform.mScale.y = 32;
 
-    mSprite->mShader = HGE::Engine::graphicsModule()->getShader("./assets/shaders/basicSpriteVertexShader.vs",
+    mSprite->mShader = mContext->mGraphicsModule->getShader("./assets/shaders/basicSpriteVertexShader.vs",
                                                                 "./assets/shaders/fragmentShader.fs");
 
-    mSprite->mMaterial = HGE::Engine::graphicsModule()->getMaterial(
+    mSprite->mMaterial = mContext->mGraphicsModule->getMaterial(
             tileFiles[HGE::randomNumberBetween<int>(0, 9)].c_str());
 }

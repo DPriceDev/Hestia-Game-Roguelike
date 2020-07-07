@@ -8,9 +8,11 @@
 #include "rogue_game_environment.h"
 
 int main() {
-    auto *engine = HGE::Engine::instance();
-    HGE::Engine::useGraphicsModule<HGE::OpenglModule>();
-    HGE::Engine::graphicsModule()->setGameTitle("Hestia Roguelike v1.0");
+    auto engine = std::make_unique<HGE::Engine>();
+
+    engine->useGraphicsModule<HGE::OpenglModule>();
+
+    engine->getGraphicsModule()->setGameTitle("Hestia Roguelike v1.0");
 
     // TODO: Load inital config and get initial level?
     engine->loadGameEnvironment<RogueGameEnvironment>();

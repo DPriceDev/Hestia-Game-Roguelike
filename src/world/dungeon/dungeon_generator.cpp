@@ -5,7 +5,6 @@
 #include "world/dungeon/dungeon_generator.h"
 
 #include <algorithm>
-#include <athena_functions.h>
 #include <functional>
 #include <vector>
 
@@ -189,8 +188,43 @@ auto DungeonGenerator::generate() -> Dungeon {
         });
     });
 
+    // temporary class to hold a path and the overlapped rooms?
+
+//    std::for_each(paths.begin(), paths.end(), [&generatedRooms, &overlappingRooms](const Path &path) {
+//        std::for_each(path.mNodes.begin(), path.mNodes.end(), [&generatedRooms, &overlappingRooms](const auto &node) {
+//            const auto doesPathPointerOverlap = [&node](const auto &room) {
+//                return room->mRect.containsPoint(node);
+//            };
+//
+//            auto roomIt = std::find_if(generatedRooms.mUnusedRooms.begin(),
+//                                       generatedRooms.mUnusedRooms.end(),
+//                                       doesPathPointerOverlap);
+//
+//            if (/* is a room wall/ door, */) {
+//                overlappingRooms.push_back(std::move(*roomIt));
+//                generatedRooms.mUnusedRooms.erase(roomIt);
+//                /* cut path and append door */
+//            }
+//
+//            if (/* overlaps an overlap room */) {
+//                /* if a room edge, set as a door */
+//                /* else remove from current path */
+//            }
+//        });
+//
+//        /* do a find of range of path overlapping room? */
+//        /* if overlap, cut out room and set doors */
+//        /* repeat for each room */
+//    });
+
     /* add these rooms, updating the path */
 
+
+    /* Or ? */
+    /* get path */
+    /* get overlapping rooms */
+    /* cut path straight away */
+    /* continue */
 
     /* todo: return dungeon */
     auto dungeon = Dungeon();

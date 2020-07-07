@@ -9,6 +9,7 @@
 
 #include <framework/ecs/game_object.h>
 #include <framework/systems/debug_system.h>
+#include <context.h>
 
 #include "player/rogue_player.h"
 
@@ -16,7 +17,6 @@
  *
  */
 class MapGrid : public HGE::GameObject {
-
     HGE::DebugComponent *mDebugComponent;
 
     static const int MaxGridSize = 10;
@@ -28,6 +28,8 @@ class MapGrid : public HGE::GameObject {
 
 public:
     void addPlayerToStartRoom(RoguePlayer *roguePlayer);
+
+    MapGrid(HGE::Context* context) : HGE::GameObject(context) { }
 };
 
 #endif //HESTIA_ROGUELIKE_MAP_GRID_H

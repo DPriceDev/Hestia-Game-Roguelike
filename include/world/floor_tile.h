@@ -9,6 +9,7 @@
 
 #include <framework/ecs/game_object.h>
 #include <framework/systems/sprite_system.h>
+#include <context.h>
 
 class FloorTile : public HGE::GameObject {
 
@@ -26,7 +27,7 @@ public:
     HGE::SpriteComponent *mSprite;
     HGE::PositionComponent *mPosition;
 
-    FloorTile() = default;
+    FloorTile(HGE::Context* context) : HGE::GameObject(context) { }
 
     ~FloorTile() override;
 
