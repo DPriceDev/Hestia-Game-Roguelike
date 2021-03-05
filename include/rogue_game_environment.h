@@ -1,7 +1,7 @@
 #ifndef HESTIA_ROGUE_GAME_ENVIRONMENT_H
 #define HESTIA_ROGUE_GAME_ENVIRONMENT_H
 
-#include <framework/game_envrionment.h>
+#include <game/game_envrionment.h>
 #include <context.h>
 
 class RogueGameEnvironment : public HGE::GameEnvironment {

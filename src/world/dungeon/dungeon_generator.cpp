@@ -14,18 +14,30 @@
 #include "maths/delaunay.h"
 #include "maths/minimum_spanning_tree.h"
 
+
+const auto highestRoom = [](const auto &a, const auto &b) { return a->mRect.position().y < b->mRect.position().y; };
+const auto leftMostRoom = [](const auto &a, const auto &b) { return a->mRect.position().x > b->mRect.position().x; };
+const auto rightMostRoom = [](const auto &a, const auto &b) { return a->mRect.position().x < b->mRect.position().x; };
+const auto lowestRoom = [](const auto &a, const auto &b) { return a->mRect.position().y > b->mRect.position().y; };
+
+const static auto surroundingOffset = std::array<HGE::Vector2i, 8> {
+        HGE::Vector2i{ 0 , 1 },
+        HGE::Vector2i{ 1 , 1 },
+        HGE::Vector2i{ 1 , 0 },
+        HGE::Vector2i{ 1 , -1 },
+        HGE::Vector2i{ 0 , -1 },
+        HGE::Vector2i{ -1 , -1 },
+        HGE::Vector2i{ -1 , 0 },
+        HGE::Vector2i{ -1 , 1 }
+};
+
 /**
  *
  * @param rooms
  * @return
  */
-
 auto DungeonGenerator::createDungeonGridFromRooms(std::vector<std::unique_ptr<Room>> &rooms)
 -> HGE::Grid<std::unique_ptr<GridTile>> {
-    const auto highestRoom = [](const auto &a, const auto &b) { return a->mRect.position().y < b->mRect.position().y; };
-    const auto leftMostRoom = [](const auto &a, const auto &b) { return a->mRect.position().x > b->mRect.position().x; };
-    const auto rightMostRoom = [](const auto &a, const auto &b) { return a->mRect.position().x < b->mRect.position().x; };
-    const auto lowestRoom = [](const auto &a, const auto &b) { return a->mRect.position().y > b->mRect.position().y; };
 
     auto top = std::max_element(rooms.begin(), rooms.end(), highestRoom)->get()->mRect.topLeft().y;
     auto left = std::max_element(rooms.begin(), rooms.end(), leftMostRoom)->get()->mRect.topLeft().x;
@@ -75,16 +87,6 @@ void DungeonGenerator::insertRoomIntoGrid(HGE::Grid<std::unique_ptr<GridTile>> &
  *
  */
 void insertPathIntoGrid(HGE::Grid<std::unique_ptr<GridTile>> &grid, Path &path) {
-    const static auto surroundingOffset = std::array<HGE::Vector2i, 8> {
-            HGE::Vector2i{ 0 , 1 },
-            HGE::Vector2i{ 1 , 1 },
-            HGE::Vector2i{ 1 , 0 },
-            HGE::Vector2i{ 1 , -1 },
-            HGE::Vector2i{ 0 , -1 },
-            HGE::Vector2i{ -1 , -1 },
-            HGE::Vector2i{ -1 , 0 },
-            HGE::Vector2i{ -1 , 1 }
-    };
 
     const auto addPathToGrid = [&grid, &path] (const auto & node) {
         const auto setSurroundingWalls = [&grid, &node, &path] (const auto & offset) {

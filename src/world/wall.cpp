@@ -5,16 +5,17 @@
 #include "world/wall.h"
 
 #include <engine.h>
+#include "framework/ecs/interactors/component_interactor.h"
 #include <maths/maths.h>
 
 Wall::~Wall() {
-    destroyComponent(mSpriteComponent);
-    destroyComponent(mPositionComponent);
+    HGE::ECS::destroyComponent(mContext, mSpriteComponent);
+    HGE::ECS::destroyComponent(mContext, mPositionComponent);
 }
 
 void Wall::onCreate() {
-    mSpriteComponent = createComponent<HGE::SpriteComponent>(getId());
-    mPositionComponent = createComponent<HGE::PositionComponent>(getId());
+    mSpriteComponent = HGE::ECS::createComponent<HGE::SpriteComponent>(mContext, getId());
+    mPositionComponent = HGE::ECS::createComponent<HGE::PositionComponent>(mContext, getId());
     mPositionComponent->mTransform.mLocalPosition.x = 500;
     mPositionComponent->mTransform.mLocalPosition.y = 600;
     mSpriteComponent->mTransform.mScale.x = 32;

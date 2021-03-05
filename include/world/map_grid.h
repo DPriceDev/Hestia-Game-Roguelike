@@ -7,8 +7,8 @@
 
 #include <array>
 
-#include <framework/ecs/game_object.h>
-#include <framework/systems/debug_system.h>
+#include <game/game_object.h>
+#include <game/systems/debug_system.h>
 #include <context.h>
 
 #include "player/rogue_player.h"

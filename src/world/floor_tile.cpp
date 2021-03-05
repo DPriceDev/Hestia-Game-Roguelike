@@ -6,15 +6,16 @@
 
 #include <engine.h>
 #include <maths/maths.h>
+#include <framework/ecs/interactors/component_interactor.h>
 
 FloorTile::~FloorTile() {
-    destroyComponent(mSprite);
-    destroyComponent(mPosition);
+    HGE::ECS::destroyComponent(mContext, mSprite);
+    HGE::ECS::destroyComponent(mContext, mPosition);
 }
 
 void FloorTile::onCreate() {
-    mSprite = createComponent<HGE::SpriteComponent>(getId());
-    mPosition = createComponent<HGE::PositionComponent>(getId());
+    mSprite = HGE::ECS::createComponent<HGE::SpriteComponent>(mContext, getId());
+    mPosition = HGE::ECS::createComponent<HGE::PositionComponent>(mContext, getId());
 
     mSprite->mTransform.mScale.x = 32;
     mSprite->mTransform.mScale.y = 32;

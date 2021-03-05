@@ -5,21 +5,22 @@
 #include "player/rogue_player.h"
 
 #include <engine.h>
+#include <framework/ecs/interactors/component_interactor.h>
 
 RoguePlayer::~RoguePlayer() {
-    destroyComponent(mTickComponent);
-    destroyComponent(mSpriteComponent);
-    destroyComponent(mControlComponent);
-    destroyComponent(mPositionComponent);
-    destroyComponent(mCameraComponent);
+    HGE::ECS::destroyComponent(mContext, mTickComponent);
+    HGE::ECS::destroyComponent(mContext, mSpriteComponent);
+    HGE::ECS::destroyComponent(mContext, mControlComponent);
+    HGE::ECS::destroyComponent(mContext, mPositionComponent);
+    HGE::ECS::destroyComponent(mContext, mCameraComponent);
 }
 
 void RoguePlayer::onCreate() {
-    mTickComponent = createComponent<HGE::TickComponent>(getId());
-    mPositionComponent = createComponent<HGE::PositionComponent>(getId());
-    mSpriteComponent = createComponent<HGE::SpriteComponent>(getId());
-    mControlComponent = createComponent<HGE::ControlComponent>(getId());
-    mCameraComponent = createComponent<HGE::CameraComponent>(getId(), HGE::CameraView(800, 600), true);
+    mTickComponent = HGE::ECS::createComponent<HGE::TickComponent>(mContext, getId());
+    mPositionComponent = HGE::ECS::createComponent<HGE::PositionComponent>(mContext, getId());
+    mSpriteComponent = HGE::ECS::createComponent<HGE::SpriteComponent>(mContext, getId());
+    mControlComponent = HGE::ECS::createComponent<HGE::ControlComponent>(mContext, getId());
+    mCameraComponent = HGE::ECS::createComponent<HGE::CameraComponent>(mContext, getId(), HGE::CameraView(800, 600), true);
 
     mTickComponent->mTickFunction = [&](double deltaTime) { this->tickFunction(deltaTime); };
 

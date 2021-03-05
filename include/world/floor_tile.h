@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include <framework/ecs/game_object.h>
-#include <framework/systems/sprite_system.h>
+#include <game/game_object.h>
+#include <game/systems/sprite_system.h>
 #include <context.h>
 
 class FloorTile : public HGE::GameObject {

@@ -33,6 +33,8 @@ class BreadthPathGenerator {
     ScoreOperator mScoreOperator;
     PathingOperator mPathingOperator;
 
+    static constexpr int sMaxScore = 99999999;
+
     /**
      * Internal Tile Class
      */
@@ -140,10 +142,12 @@ class BreadthPathGenerator {
     }
 
 public:
-    static const int sMaxScore = 99999999;
-
-    BreadthPathGenerator(HGE::Grid<Type> &grid, ScoreOperator scoreOperator, PathingOperator pathingOperator)
-            : mGrid(grid), mScoreOperator(scoreOperator), mPathingOperator(pathingOperator) { }
+    BreadthPathGenerator(HGE::Grid<Type> &grid,
+                         ScoreOperator scoreOperator,
+                         PathingOperator pathingOperator)
+            : mGrid(grid),
+            mScoreOperator(scoreOperator),
+            mPathingOperator(pathingOperator) { }
 
     ~BreadthPathGenerator() = default;
 

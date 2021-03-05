@@ -5,8 +5,9 @@
 #ifndef HESTIA_ROGUELIKE_WALL_H
 #define HESTIA_ROGUELIKE_WALL_H
 
-#include <framework/ecs/game_object.h>
-#include <framework/systems/sprite_system.h>
+#include <game/game_object.h>
+#include <game/systems/sprite_system.h>
+#include <context.h>
 
 class Wall : public HGE::GameObject {
 
@@ -19,7 +20,7 @@ public:
     HGE::SpriteComponent *mSpriteComponent;
     HGE::PositionComponent *mPositionComponent;
 
-    Wall() = default;
+    Wall(HGE::Context* mContext) : HGE::GameObject(mContext) { }
 
     ~Wall() override;
 

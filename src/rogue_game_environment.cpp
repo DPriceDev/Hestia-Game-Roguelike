@@ -3,11 +3,12 @@
 //
 
 #include "rogue_game_environment.h"
+#include "framework/ecs/interactors/object_interactor.h"
 
 #include "world/map_grid.h"
 
 void RogueGameEnvironment::beginGame() {
-    createObject<MapGrid>();
+    HGE::ECS::createObject<MapGrid>(mContext);
 }
 
 void RogueGameEnvironment::gameLoop(const double &deltaTime) { }

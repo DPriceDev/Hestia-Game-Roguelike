@@ -25,12 +25,12 @@ void Triangulation::deleteVertex(const int id) {
         return vertex->mId == id;
     };
 
-    const auto triIt = std::remove_if(mTriangles.begin(), mTriangles.end(), [id, vertexIdMatch](const auto &triangle) {
+    const auto triIt = std::remove_if(mTriangles.begin(), mTriangles.end(), [vertexIdMatch](const auto &triangle) {
         return std::any_of(triangle->mVertices.begin(), triangle->mVertices.end(), vertexIdMatch);
     });
     mTriangles.erase(triIt, mTriangles.end());
 
-    const auto edgeIt = std::remove_if(mEdges.begin(), mEdges.end(), [id, vertexIdMatch](const auto &edge) {
+    const auto edgeIt = std::remove_if(mEdges.begin(), mEdges.end(), [vertexIdMatch](const auto &edge) {
         return std::any_of(edge->mVertices.begin(), edge->mVertices.end(), vertexIdMatch);
     });
     mEdges.erase(edgeIt, mEdges.end());

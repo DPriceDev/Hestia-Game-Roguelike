@@ -9,7 +9,7 @@
 #include <random>
 #include <memory>
 
-#include <framework/systems/debug_system.h>
+#include <game/systems/debug_system.h>
 
 #include "room.h"
 #include "path.h"

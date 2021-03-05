@@ -1,12 +1,12 @@
 #ifndef HESTIA_ROGUELIKE_ROGUE_PLAYER_H
 #define HESTIA_ROGUELIKE_ROGUE_PLAYER_H
 
-#include <framework/ecs/game_object.h>
-#include <framework/systems/tick_system.h>
-#include <framework/systems/sprite_system.h>
-#include <framework/systems/control_system.h>
-#include <framework/systems/position_system.h>
-#include <framework/systems/camera_system.h>
+#include <game/game_object.h>
+#include <game/systems/tick_system.h>
+#include <game/systems/sprite_system.h>
+#include <game/systems/control_system.h>
+#include <game/systems/position_system.h>
+#include <game/systems/camera_system.h>
 
 class RoguePlayer : public HGE::GameObject {
 
@@ -21,8 +21,6 @@ class RoguePlayer : public HGE::GameObject {
     void tickFunction(double deltaTime);
 
 public:
-    RoguePlayer() = default;
-
     ~RoguePlayer() override;
 
     void onCreate() override;

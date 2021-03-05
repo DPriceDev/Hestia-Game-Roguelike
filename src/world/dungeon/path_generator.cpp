@@ -10,6 +10,35 @@
 #include "world/dungeon/breadth_path_generator.h"
 
 /* */
+static const std::map<HGE::Vector2i, int> sOffsetMap{
+        std::make_pair(HGE::Vector2i(0, 0), 0),
+        std::make_pair(HGE::Vector2i(0, 1), 2),
+        std::make_pair(HGE::Vector2i(1, 0), 3),
+        std::make_pair(HGE::Vector2i(0, -1), 0),
+        std::make_pair(HGE::Vector2i(-1, 0), 1)};
+
+static constexpr auto lowestScore = [](const auto &a, const auto &b) {
+    return a.mScore < b.mScore;
+};
+
+/* */
+static constexpr auto getNextTileWithStraightPathing = [](const auto &pathingData) {
+
+    auto lowestTile = std::min_element(pathingData.mAdjacentTiles.begin(),
+                                       pathingData.mAdjacentTiles.end(),
+                                       lowestScore);
+
+    auto diff = pathingData.mCurrentTile - pathingData.mPreviousTile;
+    auto tile = pathingData.mAdjacentTiles.at(sOffsetMap.at(diff));
+    if (tile.mScore == lowestTile->mScore && diff != HGE::Vector2i(0, 0)) {
+        return tile;
+    } else {
+        return *lowestTile;
+    }
+};
+
+
+/* */
 Path PathGenerator::shrinkPathToRoomWalls(HGE::Grid<std::unique_ptr<GridTile>> &grid, Path &path,
                                           Room *roomA, Room *roomB) {
     auto room = roomB;
@@ -41,33 +70,6 @@ auto PathGenerator::extractRoomPointersFromVectorById(const std::vector<std::uni
     auto roomB = std::find_if(rooms.begin(), rooms.end(), findRoomById);
     return std::make_pair(roomA->get(), roomB->get());
 }
-
-/* */
-static const std::map<HGE::Vector2i, int> sOffsetMap{
-        std::make_pair(HGE::Vector2i(0, 0), 0),
-        std::make_pair(HGE::Vector2i(0, 1), 2),
-        std::make_pair(HGE::Vector2i(1, 0), 3),
-        std::make_pair(HGE::Vector2i(0, -1), 0),
-        std::make_pair(HGE::Vector2i(-1, 0), 1)};
-
-/* */
-static constexpr auto getNextTileWithStraightPathing = [](const auto &pathingData) {
-    constexpr auto lowestScore = [](const auto &a, const auto &b) {
-        return a.mScore < b.mScore;
-    };
-
-    auto lowestTile = std::min_element(pathingData.mAdjacentTiles.begin(),
-                                       pathingData.mAdjacentTiles.end(),
-                                       lowestScore);
-
-    auto diff = pathingData.mCurrentTile - pathingData.mPreviousTile;
-    auto tile = pathingData.mAdjacentTiles.at(sOffsetMap.at(diff));
-    if (tile.mScore == lowestTile->mScore && diff != HGE::Vector2i(0, 0)) {
-        return tile;
-    } else {
-        return *lowestTile;
-    }
-};
 
 /* */
 Path PathGenerator::generatePath(HGE::Grid<std::unique_ptr<GridTile>> &grid,

@@ -4,18 +4,22 @@
 
 #include "world/map_grid.h"
 
+#include <framework/ecs/interactors/component_interactor.h>
+#include <framework/ecs/interactors/object_interactor.h>
+
 #include "world/floor_tile.h"
 #include "world/dungeon/dungeon_generator.h"
 
+
 void MapGrid::onCreate() {
-    mDebugComponent = createComponent<HGE::DebugComponent>(getId());
+    mDebugComponent = HGE::ECS::createComponent<HGE::DebugComponent>(mContext, getId());
 
     auto dungeonGen = DungeonGenerator(mDebugComponent);
 
     auto dungeon = dungeonGen.generate();
 
     for (auto const &room : dungeon.mMainRooms) {
-        auto roomTile = createObject<FloorTile>();
+        auto roomTile = HGE::ECS::createObject<FloorTile>(mContext);
         roomTile->mPosition->mTransform.mLocalPosition.x = (400 + room->mRect.position().x) * 1.0f;
         roomTile->mPosition->mTransform.mLocalPosition.y = (300 + room->mRect.position().y) * 1.0f;
 
@@ -25,7 +29,7 @@ void MapGrid::onCreate() {
     }
 
     for (auto const &room : dungeon.mMinorRooms) {
-        auto roomTile = createObject<FloorTile>();
+        auto roomTile = HGE::ECS::createObject<FloorTile>(mContext);
         roomTile->mPosition->mTransform.mLocalPosition.x = (400 + room->mRect.position().x) * 1.0f;
         roomTile->mPosition->mTransform.mLocalPosition.y = (300 + room->mRect.position().y) * 1.0f;
 
