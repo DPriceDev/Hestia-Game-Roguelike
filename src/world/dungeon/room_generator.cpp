@@ -56,7 +56,7 @@ auto RoomGenerator::separateRooms(std::vector<std::unique_ptr<Room>> &rooms) -> 
                        && room->mRect.midpoint() == otherRoom->mRect.midpoint();
             });
 
-            const auto matchSeparate = [&room, &overlapsExist](auto &a, auto &b) {
+             auto matchSeparate = [&room, &overlapsExist](const auto &a, const auto &b) {
                 overlapsExist = true;
                 auto midpoint = (room->mRect.midpoint() - b->mRect.midpoint()) / sSeperationFactor;
                 midpoint.x = ceil(midpoint.x);
@@ -64,7 +64,7 @@ auto RoomGenerator::separateRooms(std::vector<std::unique_ptr<Room>> &rooms) -> 
                 return a + midpoint;
             };
 
-            const auto matchSame = [&room, &overlapsExist](auto &a, auto &b) {
+            const auto matchSame = [&room, &overlapsExist](const auto &a, const auto &b) {
                 overlapsExist = true;
                 auto midpointNorm = room->mRect.midpoint().normalised();
                 midpointNorm.x = ceil(midpointNorm.x);
@@ -72,8 +72,8 @@ auto RoomGenerator::separateRooms(std::vector<std::unique_ptr<Room>> &rooms) -> 
                 return a + midpointNorm;
             };
 
-            room->mMovement += std::accumulate(overlapping.begin(),
-                                               overlapping.end(),
+            room->mMovement += std::accumulate(std::cbegin(overlapping),
+                                               std::cend(overlapping),
                                                HGE::Vector2i(),
                                                matchSeparate);
 

@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <random>
+#include <memory>
 
 #include <maths/maths_types.h>
 #include <maths/components/connection.h>

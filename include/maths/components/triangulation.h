@@ -6,6 +6,7 @@
 #define HESTIA_ROGUELIKE_MATHS_TRIANGULATION_H
 
 #include <vector>
+#include <memory>
 
 #include "triangle.h"
 #include "edge.h"
